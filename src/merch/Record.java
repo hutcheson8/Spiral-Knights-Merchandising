@@ -34,15 +34,13 @@ public final class Record implements Serializable {
 		converter.setTime(timestamp);
 		converter.set(Calendar.DAY_OF_YEAR, converter.get(Calendar.DAY_OF_YEAR) - 2);
 		Date expiredTime = converter.getTime();
-		Record returnValue = getPrevious();
-		if (returnValue == null)
-			return null;
+		Record returnValue = this;
 		do {
+			returnValue = returnValue.getPrevious();
 			if (returnValue.getPrevious() == null) {
 				return null;
 			}
 		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
-		returnValue = returnValue.getPrevious();
 		return returnValue;
 	}
 

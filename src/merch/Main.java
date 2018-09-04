@@ -162,6 +162,7 @@ public class Main implements Serializable {
 		daily.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		daily.pack();
 		daily.setLocationRelativeTo(null);
+		daily.setResizable(false);
 		daily.setVisible(true);
 	}
 
