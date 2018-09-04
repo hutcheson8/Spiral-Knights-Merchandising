@@ -41,7 +41,7 @@ public final class Record implements Serializable {
 				return null;
 			}
 		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
-		return returnValue;// Test
+		return returnValue;
 	}
 
 	private final float getExpiredCasePrice() {
@@ -164,12 +164,12 @@ public final class Record implements Serializable {
 			numListings = preNumListings;
 		}
 		int costPlusPrice = (int) (cost * (1 + costPlusPercent));
-		int undercutMarginPrice = (int) (cost + (aHPrice - cost) * undercutMargin);
+		int undercutMarginPrice = (int) (cost + (aHPrice * recordItem.getQuantityPerListing() - cost) * undercutMargin);
 		usingCostPlus = costPlusPrice < undercutMarginPrice;
 		price = usingCostPlus ? costPlusPrice : undercutMarginPrice;
 		Record notYetExpired = getNotYetExpired();
 		if (notYetExpired != null) {
-			notYetExpired.setUndercut(aHPrice);
+			notYetExpired.setUndercut(aHPrice * recordItem.getQuantityPerListing());
 			if (price < notYetExpired.getPrice()) {
 				stocked = false;
 			} else {

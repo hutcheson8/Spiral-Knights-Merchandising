@@ -113,16 +113,22 @@ public class Item implements Serializable {
 		switch (starLevel) {
 		case 0:
 			basePrice = 5;
+			break;
 		case 1:
 			basePrice = 12.5f;
+			break;
 		case 2:
 			basePrice = 25;
+			break;
 		case 3:
 			basePrice = 50;
+			break;
 		case 4:
 			basePrice = 100;
+			break;
 		case 5:
 			basePrice = 250;
+			break;
 		}
 		return (int) (basePrice * quantityPerListing + .5);
 	}
