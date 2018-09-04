@@ -41,7 +41,7 @@ public final class Record implements Serializable {
 				return null;
 			}
 		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
-		return returnValue;
+		return returnValue;// Test
 	}
 
 	private final float getExpiredCasePrice() {
