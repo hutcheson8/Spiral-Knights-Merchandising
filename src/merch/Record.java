@@ -14,9 +14,22 @@ public final class Record implements Serializable {
 	private final boolean stocked, usingCostPlus;
 	// private final Float energyPrice;
 	private final float undercutMargin, costPlusPercent;
-	private final int lotsSold, lotsExpired, profit, loss, netProfit, numListings, price, cost;
+	private final int lotsSold, lotsExpired, profit, loss, netProfit, numListings, price, cost, finalListings,
+			numToSell, aHPrice, listingPrice;
 	private final Date timestamp;
 	private int undercut;
+
+	public final int getListingPrice() {
+		return listingPrice;
+	}
+
+	public final int getNumToSell() {
+		return numToSell;
+	}
+
+	private final int getFinalListings() {
+		return finalListings;
+	}
 
 	public final int getNetProfit() {
 		return netProfit;
@@ -35,10 +48,12 @@ public final class Record implements Serializable {
 		converter.set(Calendar.DAY_OF_YEAR, converter.get(Calendar.DAY_OF_YEAR) - 2);
 		Date expiredTime = converter.getTime();
 		Record returnValue = this;
+		if (returnValue.getPrevious() == null)
+			return returnValue;
 		do {
 			returnValue = returnValue.getPrevious();
 			if (returnValue.getPrevious() == null) {
-				return null;
+				return returnValue;
 			}
 		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
 		return returnValue;
@@ -98,7 +113,7 @@ public final class Record implements Serializable {
 		return usingCostPlus;
 	}
 
-	private final boolean isStocked() {
+	public final boolean isStocked() {
 		return stocked;
 	}
 
@@ -115,21 +130,27 @@ public final class Record implements Serializable {
 		// this.energyPrice = energyPrice;
 		this.previous = previous;
 		this.timestamp = timestamp;
+		if (aHPrice == 0) {
+			aHPrice = previous.getAHPrice();
+		}
+		this.aHPrice = aHPrice;
 		lotsExpired = expiredItems / recordItem.getQuantityPerListing();
 		cost = recordItem.getSDCRCostPerListing(energyPrice);
 		undercut = 0;
+		Record notYetExpired = getNotYetExpired();
 		if (previous == null) {
 			lotsSold = 0;
 			profit = 0;
+			listingPrice = 0;
 			loss = 0;
 			numListings = recordItem.getStartingListings();
 			costPlusPercent = 1f;
 			undercutMargin = .75f;
 		} else {
-			lotsSold = previous.getNumListings() - lotsExpired - leftovers;
-			profit = lotsSold * (previous.getPrice() * 9 / 10 - cost);
-			loss = lotsExpired
-					* max(recordItem.getStarLevelBasedListingPrice(), (int) (previous.getPrice() * .05f + .5f));
+			lotsSold = previous.getFinalListings() - lotsExpired - leftovers;
+			profit = lotsSold * (notYetExpired.getPrice() * 9 / 10 - cost);
+			listingPrice = max(recordItem.getStarLevelBasedListingPrice(), (int) (previous.getPrice() * .05f + .5f));
+			loss = lotsExpired * listingPrice;
 			int preNumListings = previous.getNumListings();
 			if (lotsExpired > 0) {// Expired
 				preNumListings -= lotsExpired;
@@ -147,8 +168,7 @@ public final class Record implements Serializable {
 					undercutMargin = previous.getUndercutMargin();
 					costPlusPercent = previous.getCostPlusPercent();
 				}
-			} else if (previous.isStocked() && leftovers == 0
-					&& lotsExpired == 0) {/* Sold out */
+			} else if (previous.isStocked() && leftovers == 0) {// Sold out
 				preNumListings++;
 				if (previous.isUsingCostPlus()) {
 					undercutMargin = previous.getUndercutMargin();
@@ -167,7 +187,6 @@ public final class Record implements Serializable {
 		int undercutMarginPrice = (int) (cost + (aHPrice * recordItem.getQuantityPerListing() - cost) * undercutMargin);
 		usingCostPlus = costPlusPrice < undercutMarginPrice;
 		price = usingCostPlus ? costPlusPrice : undercutMarginPrice;
-		Record notYetExpired = getNotYetExpired();
 		if (notYetExpired != null) {
 			notYetExpired.setUndercut(aHPrice * recordItem.getQuantityPerListing());
 			if (price < notYetExpired.getPrice()) {
@@ -178,6 +197,12 @@ public final class Record implements Serializable {
 		} else {
 			stocked = true;
 		}
+		finalListings = stocked ? numListings : leftovers;
+		numToSell = stocked ? numListings - leftovers : 0;
 		netProfit = profit - loss;
+	}
+
+	private final int getAHPrice() {
+		return aHPrice;
 	}
 }

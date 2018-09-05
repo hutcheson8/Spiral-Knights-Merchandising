@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Item implements Serializable {
+public class Item implements Serializable {// TODO Calc spending/offers use
+											// merch.Record.getListingPrice()
 	private static final long serialVersionUID = 402088475468107547L;
 	private ArrayList<Record> records = new ArrayList<Record>();
 	private final static String POSINT = "Please enter a positive integer.";
@@ -76,6 +77,14 @@ public class Item implements Serializable {
 	private final String name;
 	private final int energyPerSDPurchase, quantityPerPurchase, quantityPerListing, starLevel, startingListings;
 
+	public final int getNumToSell() {
+		return mostRecentRecord().getNumToSell();
+	}
+
+	public final boolean isCurrentlyStocked() {
+		return mostRecentRecord().isStocked();
+	}
+
 	public final int getCurrentPrice() {
 		if (mostRecentRecord() != null)
 			return mostRecentRecord().getPrice();
@@ -130,7 +139,7 @@ public class Item implements Serializable {
 			basePrice = 250;
 			break;
 		}
-		return (int) (basePrice * quantityPerListing + .5);
+		return (int) (basePrice * quantityPerListing * 2 + .5);
 	}
 
 	public final int getSDCRCostPerListing(float energyPrice) {

@@ -36,9 +36,37 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 
-public class Main implements Serializable {
+public class Main implements Serializable {// TODO Calc spending/offers.
 	private static final long serialVersionUID = -7878541532400694122L;
 	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price" };
+	private final static MouseListener COPIER = new MouseListener() {
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			HashMap<DataFormat, Object> data = new HashMap<DataFormat, Object>();
+			data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
+			Platform.runLater(new Runnable() {
+				public void run() {
+					Clipboard.getSystemClipboard().setContent(data);
+				}
+			});
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+		}
+	};
 	private final ArrayList<Item> items = new ArrayList<Item>();
 
 	private final class History extends JFrame {
@@ -85,34 +113,6 @@ public class Main implements Serializable {
 	private final void constructDaily(Runnable update) {
 		JFrame daily = new JFrame("Daily");
 		daily.setLayout(new GridLayout(items.size() + 2, DAILY_COLUMNS.length + 1));
-		MouseListener copier = new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				HashMap<DataFormat, Object> data = new HashMap<DataFormat, Object>();
-				data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
-				Platform.runLater(new Runnable() {
-					public void run() {
-						Clipboard.getSystemClipboard().setContent(data);
-					}
-				});
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-		};
 		JTextField[] textFields = new JTextField[items.size() * DAILY_COLUMNS.length + 1];
 		daily.add(new JLabel("Name"));
 		for (int x = 0; x < DAILY_COLUMNS.length; x++) {
@@ -121,7 +121,7 @@ public class Main implements Serializable {
 		for (int x = 0; x < items.size(); x++) {
 			Item i = items.get(x);
 			JLabel itemName = new JLabel(i.getName());
-			itemName.addMouseListener(copier);
+			itemName.addMouseListener(COPIER);
 			daily.add(itemName);
 			for (int y = 0; y < DAILY_COLUMNS.length; y++) {
 				textFields[x * DAILY_COLUMNS.length + y] = new JTextField();
@@ -141,6 +141,7 @@ public class Main implements Serializable {
 					record(textFields);
 					update.run();
 					daily.setVisible(false);
+					constructSellPrompt();
 				} catch (Exception f) {
 					f.printStackTrace();
 					JOptionPane.showMessageDialog(null, "Incorrect Input!");
@@ -164,6 +165,32 @@ public class Main implements Serializable {
 		daily.setLocationRelativeTo(null);
 		daily.setResizable(false);
 		daily.setVisible(true);
+	}
+
+	private final void constructSellPrompt() {
+		JFrame sellPrompt = new JFrame("Sell");
+		sellPrompt.setLayout(new GridLayout(0, 3));
+		JLabel name = new JLabel("Name"), listings = new JLabel("# Listings"), price = new JLabel("Price");
+		sellPrompt.add(name);
+		sellPrompt.add(listings);
+		sellPrompt.add(price);
+		for (Item i : items) {
+			if (i.isCurrentlyStocked()) {
+				JLabel aName = new JLabel(i.getName());
+				aName.addMouseListener(COPIER);
+				JLabel someListings = new JLabel(i.getNumToSell() + "");
+				JLabel aPrice = new JLabel(i.getCurrentPrice() + "");
+				aPrice.addMouseListener(COPIER);
+				sellPrompt.add(aName);
+				sellPrompt.add(someListings);
+				sellPrompt.add(aPrice);
+			}
+		}
+		sellPrompt.pack();
+		sellPrompt.setLocationRelativeTo(null);
+		sellPrompt.setResizable(false);
+		sellPrompt.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		sellPrompt.setVisible(true);
 	}
 
 	private final void finish() {
