@@ -10,120 +10,14 @@ import java.util.GregorianCalendar;
 
 public final class Record implements Serializable {
 	private static final long serialVersionUID = 2941864307935615486L;
-	private final Record previous;
-	private final boolean stocked, usingCostPlus;
-	// private final Float energyPrice;
-	private final float undercutMargin, costPlusPercent;
 	private final int lotsSold, lotsExpired, profit, loss, netProfit, numListings, price, cost, finalListings,
 			numToSell, aHPrice, listingPrice;
+	private final Record previous;
+	private final boolean stocked, usingCostPlus;
 	private final Date timestamp;
 	private int undercut;
-
-	public final int getListingPrice() {
-		return listingPrice;
-	}
-
-	public final int getNumToSell() {
-		return numToSell;
-	}
-
-	private final int getFinalListings() {
-		return finalListings;
-	}
-
-	public final int getNetProfit() {
-		return netProfit;
-	}
-
-	private final Record getJustExpired() {
-		Record notYet = getNotYetExpired();
-		if (notYet == null)
-			return null;
-		return notYet.getPrevious();
-	}
-
-	private final Record getNotYetExpired() {
-		GregorianCalendar converter = new GregorianCalendar();
-		converter.setTime(timestamp);
-		converter.set(Calendar.DAY_OF_YEAR, converter.get(Calendar.DAY_OF_YEAR) - 2);
-		Date expiredTime = converter.getTime();
-		Record returnValue = this;
-		if (returnValue.getPrevious() == null)
-			return returnValue;
-		do {
-			returnValue = returnValue.getPrevious();
-			if (returnValue.getPrevious() == null) {
-				return returnValue;
-			}
-		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
-		return returnValue;
-	}
-
-	private final float getExpiredCasePrice() {
-		return usingCostPlus ? ((float) undercut) / cost - 1.01f
-				: (undercut - cost) * undercutMargin / (price - cost) - .01f;
-	}
-
-	private final int getUndercut() {
-		return undercut;
-	}
-
-	private final void setUndercut(int undercut) {
-		if ((this.undercut == 0 && undercut < price) || (undercut < this.undercut))
-			this.undercut = undercut;
-	}
-
-	public final float getUndercutMargin() {
-		return undercutMargin;
-	}
-
-	private final Date getTimestamp() {
-		return timestamp;
-	}
-
-	/*
-	 * private final Record getDayOfWeekRecord() { GregorianCalendar converter =
-	 * new GregorianCalendar(); converter.setTime(timestamp); int day =
-	 * converter.get(Calendar.DAY_OF_WEEK); for (Record toCheck = getPrevious();
-	 * toCheck != null; toCheck = toCheck.getPrevious()) {
-	 * converter.setTime(toCheck.getTimestamp()); int dayToCheck =
-	 * converter.get(Calendar.DAY_OF_WEEK); if (day == dayToCheck) return
-	 * toCheck; } return null; }
-	 * 
-	 * private final Record getLastYearRecord() { GregorianCalendar converter =
-	 * new GregorianCalendar(); converter.setTime(timestamp); int day =
-	 * converter.get(Calendar.DAY_OF_WEEK); int week =
-	 * converter.get(Calendar.WEEK_OF_YEAR); for (Record toCheck =
-	 * getPrevious(); toCheck != null; toCheck = toCheck.getPrevious()) {
-	 * converter.setTime(toCheck.getTimestamp()); int dayToCheck =
-	 * converter.get(Calendar.DAY_OF_WEEK); int weekToCheck =
-	 * converter.get(Calendar.WEEK_OF_YEAR); if (day == dayToCheck && week ==
-	 * weekToCheck) return toCheck; } return null; }
-	 */
-
-	private final Record getPrevious() {
-		return previous;
-	}
-
-	public final float getCostPlusPercent() {
-		return costPlusPercent;
-	}
-
-	private final boolean isUsingCostPlus() {
-		return usingCostPlus;
-	}
-
-	public final boolean isStocked() {
-		return stocked;
-	}
-
-	public final int getPrice() {
-		return price;
-	}
-
-	public final int getNumListings() {
-		return numListings;
-	}
+	// private final Float energyPrice;
+	private final float undercutMargin, costPlusPercent;
 
 	public Record(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timestamp, Record previous,
 			Item recordItem) throws Exception {
@@ -205,7 +99,113 @@ public final class Record implements Serializable {
 		netProfit = profit - loss;
 	}
 
+	public final float getCostPlusPercent() {
+		return costPlusPercent;
+	}
+
+	public final int getListingPrice() {
+		return listingPrice;
+	}
+
+	public final int getNetProfit() {
+		return netProfit;
+	}
+
+	public final int getNumListings() {
+		return numListings;
+	}
+
+	public final int getNumToSell() {
+		return numToSell;
+	}
+
+	public final int getPrice() {
+		return price;
+	}
+
+	public final float getUndercutMargin() {
+		return undercutMargin;
+	}
+
+	public final boolean isStocked() {
+		return stocked;
+	}
+
 	private final int getAHPrice() {
 		return aHPrice;
+	}
+
+	private final float getExpiredCasePrice() {
+		return usingCostPlus ? ((float) undercut) / cost - 1.01f
+				: (undercut - cost) * undercutMargin / (price - cost) - .01f;
+	}
+
+	/*
+	 * private final Record getDayOfWeekRecord() { GregorianCalendar converter =
+	 * new GregorianCalendar(); converter.setTime(timestamp); int day =
+	 * converter.get(Calendar.DAY_OF_WEEK); for (Record toCheck = getPrevious();
+	 * toCheck != null; toCheck = toCheck.getPrevious()) {
+	 * converter.setTime(toCheck.getTimestamp()); int dayToCheck =
+	 * converter.get(Calendar.DAY_OF_WEEK); if (day == dayToCheck) return
+	 * toCheck; } return null; }
+	 * 
+	 * private final Record getLastYearRecord() { GregorianCalendar converter =
+	 * new GregorianCalendar(); converter.setTime(timestamp); int day =
+	 * converter.get(Calendar.DAY_OF_WEEK); int week =
+	 * converter.get(Calendar.WEEK_OF_YEAR); for (Record toCheck =
+	 * getPrevious(); toCheck != null; toCheck = toCheck.getPrevious()) {
+	 * converter.setTime(toCheck.getTimestamp()); int dayToCheck =
+	 * converter.get(Calendar.DAY_OF_WEEK); int weekToCheck =
+	 * converter.get(Calendar.WEEK_OF_YEAR); if (day == dayToCheck && week ==
+	 * weekToCheck) return toCheck; } return null; }
+	 */
+
+	private final int getFinalListings() {
+		return finalListings;
+	}
+
+	private final Record getJustExpired() {
+		Record notYet = getNotYetExpired();
+		if (notYet == null)
+			return null;
+		return notYet.getPrevious();
+	}
+
+	private final Record getNotYetExpired() {
+		GregorianCalendar converter = new GregorianCalendar();
+		converter.setTime(timestamp);
+		converter.set(Calendar.DAY_OF_YEAR, converter.get(Calendar.DAY_OF_YEAR) - 2);
+		Date expiredTime = converter.getTime();
+		Record returnValue = this;
+		if (returnValue.getPrevious() == null)
+			return returnValue;
+		do {
+			returnValue = returnValue.getPrevious();
+			if (returnValue.getPrevious() == null) {
+				return returnValue;
+			}
+		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
+		return returnValue;
+	}
+
+	private final Record getPrevious() {
+		return previous;
+	}
+
+	private final Date getTimestamp() {
+		return timestamp;
+	}
+
+	private final int getUndercut() {
+		return undercut;
+	}
+
+	private final boolean isUsingCostPlus() {
+		return usingCostPlus;
+	}
+
+	private final void setUndercut(int undercut) {
+		if ((this.undercut == 0 && undercut < price) || (undercut < this.undercut))
+			this.undercut = undercut;
 	}
 }

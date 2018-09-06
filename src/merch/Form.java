@@ -19,28 +19,11 @@ import javax.swing.JPanel;
  * @since 1.0
  */
 public class Form extends JDialog {
+	private static Thread runningThread;
 	private static final long serialVersionUID = -1599927448056995832L;
 	private boolean cancelled = false;
 	private volatile boolean done = false;
 	private FormLine[] lines;
-	private static Thread runningThread;
-
-	public static final void request(FormRequest request) {
-		if (runningThread == null || !runningThread.isAlive()) {
-			runningThread = new Thread() {
-				@Override
-				public void run() {
-					try {
-						request.run();
-					} catch (Exception e) {
-					}
-				}
-			};
-			runningThread.start();
-		} else {
-			JOptionPane.showMessageDialog(null, "Please finish the form you're currently using.");
-		}
-	}
 
 	/**
 	 * This constructor creates a new Form which contains the FormLine objects
@@ -149,5 +132,22 @@ public class Form extends JDialog {
 			value &= isVerified;
 		}
 		return value;
+	}
+
+	public static final void request(FormRequest request) {
+		if (runningThread == null || !runningThread.isAlive()) {
+			runningThread = new Thread() {
+				@Override
+				public void run() {
+					try {
+						request.run();
+					} catch (Exception e) {
+					}
+				}
+			};
+			runningThread.start();
+		} else {
+			JOptionPane.showMessageDialog(null, "Please finish the form you're currently using.");
+		}
 	}
 }
