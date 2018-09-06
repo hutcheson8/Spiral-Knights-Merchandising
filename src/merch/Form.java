@@ -28,6 +28,7 @@ public class Form extends JDialog {
 	public static final void request(FormRequest request) {
 		if (runningThread == null || !runningThread.isAlive()) {
 			runningThread = new Thread() {
+				@Override
 				public void run() {
 					try {
 						request.run();

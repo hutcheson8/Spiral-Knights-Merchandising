@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
@@ -36,15 +37,18 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 
-public class Main implements Serializable {// TODO Calc spending/offers.
+public class Main implements Serializable {
+	// TODO Throw an exception and catch with a window for good auctions.
 	private static final long serialVersionUID = -7878541532400694122L;
 	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price" };
+	private Float energyPrice;
 	private final static MouseListener COPIER = new MouseListener() {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			HashMap<DataFormat, Object> data = new HashMap<DataFormat, Object>();
 			data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
 			Platform.runLater(new Runnable() {
+				@Override
 				public void run() {
 					Clipboard.getSystemClipboard().setContent(data);
 				}
@@ -68,6 +72,112 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 		}
 	};
 	private final ArrayList<Item> items = new ArrayList<Item>();
+
+	private final class FloatHolder {
+		float f;
+
+		private final void setFloat(float f) {
+			this.f = f;
+		}
+
+		private final float getFloat() {
+			return f;
+		}
+	}
+
+	private final void constructSpendingOffers() {
+		JFrame spendingOffers = new JFrame("Spending/Offers");
+		spendingOffers.setLayout(new GridLayout(0, 3));
+		int crownOffers = 0, energyOffers = 0;
+		for (Item i : items) {
+			crownOffers += i.getRequiredCrownReserves();
+			energyOffers += i.getRequiredEnergyReserves();
+		}
+		crownOffers = crownOffers / 5000 + 1;
+		energyOffers = energyOffers / 100 + 1;
+		spendingOffers.add(new JLabel("Operation"));
+		spendingOffers.add(new JLabel("Crowns"));
+		spendingOffers.add(new JLabel("Energy"));
+		spendingOffers.add(new JLabel("Offers: "));
+		spendingOffers.add(new JLabel(crownOffers + "x5000 Offers"));
+		spendingOffers.add(new JLabel(energyOffers + "x100 Offers"));
+		spendingOffers.add(new JLabel("Remainder: "));
+		JTextField crownRemain = new JTextField();
+		spendingOffers.add(crownRemain);
+		JTextField energyRemain = new JTextField();
+		spendingOffers.add(energyRemain);
+		FloatHolder spendingCrowns = new FloatHolder();
+		spendingCrowns.setFloat(0);
+		JButton combine = new JButton("Combine");
+		combine.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					spendingCrowns.setFloat(Integer.parseInt(crownRemain.getText())
+							+ Integer.parseInt(energyRemain.getText()) * energyPrice);
+				} catch (Exception f) {
+					JOptionPane.showMessageDialog(null, "Incorrect Input!");
+				}
+				crownRemain.setText("");
+				energyRemain.setText("");
+				spendingOffers.validate();
+				spendingOffers.pack();
+				spendingOffers.repaint();
+			}
+		});
+		spendingOffers.add(combine);
+		spendingOffers.add(new JLabel() {
+			private static final long serialVersionUID = 8316659088569282216L;
+
+			@Override
+			public String getText() {
+				return spendingCrowns.getFloat() + "";
+			}
+		});
+		spendingOffers.add(new JLabel() {
+			private static final long serialVersionUID = 8304390475151931293L;
+
+			@Override
+			public String getText() {
+				return spendingCrowns.getFloat() / energyPrice + "";
+			}
+		});
+		JButton spend = new JButton("Spend");
+		spendingOffers.add(spend);
+		JTextField spentCrowns = new JTextField();
+		spendingOffers.add(spentCrowns);
+		JTextField spentEnergy = new JTextField();
+		spendingOffers.add(spentEnergy);
+		spend.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				float spentCrownsOutput;
+				try {
+					spentCrownsOutput = Integer.parseInt(spentCrowns.getText());
+				} catch (Exception f) {
+					spentCrownsOutput = 0;
+				}
+				float spentEnergyOutput;
+				try {
+					spentEnergyOutput = Integer.parseInt(spentEnergy.getText());
+				} catch (Exception f) {
+					spentEnergyOutput = 0;
+				}
+				spendingCrowns
+						.setFloat(spendingCrowns.getFloat() - spentCrownsOutput - spentEnergyOutput * energyPrice);
+				spentCrowns.setText("");
+				spentEnergy.setText("");
+				spendingOffers.validate();
+				spendingOffers.pack();
+				spendingOffers.repaint();
+			}
+		});
+		spendingOffers.pack();
+		spendingOffers.setLocationRelativeTo(null);
+		spendingOffers.setResizable(false);
+		spendingOffers.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		spendingOffers.setVisible(true);
+	}
 
 	private final class History extends JFrame {
 		private static final long serialVersionUID = 55356975967430018L;
@@ -97,16 +207,19 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 	}
 
 	private final void record(JTextField[] data) throws Exception {
-		try {
-			Float energyPrice = ((float) Integer.parseInt(data[data.length - 1].getText())) / 100;
-			Date timeStamp = new Date();
-			for (int x = 0; x < items.size(); x++) {
-				items.get(x).addRecord(Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText()),
-						Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText()),
-						Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()), energyPrice, timeStamp);
+		energyPrice = ((float) Integer.parseInt(data[data.length - 1].getText())) / 100;
+		Date timeStamp = new Date();
+		for (int x = 0; x < items.size(); x++) {
+			Item i = items.get(x);
+			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
+			if (aHPrice < i.getSDCRCostPerListing(energyPrice)) {
+				throw new GoodDealException(i, aHPrice, energyPrice);
 			}
-		} catch (NumberFormatException e) {
-			throw new Exception("");
+		}
+		for (int x = 0; x < items.size(); x++) {
+			items.get(x).addRecord(Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText()),
+					Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText()),
+					Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()), energyPrice, timeStamp);
 		}
 	}
 
@@ -143,8 +256,13 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 					daily.setVisible(false);
 					constructSellPrompt();
 				} catch (Exception f) {
-					f.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Incorrect Input!");
+					if (f instanceof GoodDealException) {
+						GoodDealException deal = (GoodDealException) f;
+						deal.showDealMessage();
+					} else {
+						f.printStackTrace();
+						JOptionPane.showMessageDialog(null, "Incorrect Input!");
+					}
 				}
 			}
 		});
@@ -160,7 +278,7 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 		for (int x = 0; x < DAILY_COLUMNS.length - 3; x++) {
 			daily.add(new JPanel());
 		}
-		daily.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		daily.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		daily.pack();
 		daily.setLocationRelativeTo(null);
 		daily.setResizable(false);
@@ -189,7 +307,37 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 		sellPrompt.pack();
 		sellPrompt.setLocationRelativeTo(null);
 		sellPrompt.setResizable(false);
-		sellPrompt.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		sellPrompt.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		sellPrompt.addWindowListener(new WindowListener() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				constructSpendingOffers();
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+			}
+		});
 		sellPrompt.setVisible(true);
 	}
 
@@ -262,13 +410,14 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 		reminder.add(new JLabel("Feed pet and complete prestige mission."));
 		JButton reminderDone = new JButton("Done");
 		reminderDone.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				reminder.setVisible(false);
 				history.setVisible(true);
 			}
 		});
 		reminder.add(reminderDone);
-		reminder.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		reminder.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		reminder.addWindowListener(new WindowListener() {
 			@Override
 			public void windowActivated(WindowEvent arg0) {
@@ -301,7 +450,7 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 		});
 		reminder.pack();
 		reminder.setLocationRelativeTo(null);
-		// TODO Setup window for history/stats
+		// Setup window for history/stats
 		history.setLayout(new BorderLayout());
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new FlowLayout());
@@ -310,6 +459,7 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Form.request(new FormRequest() {
+					@Override
 					public void run() throws CancelException {
 						items.add(new Item());
 						history.update();
@@ -333,7 +483,7 @@ public class Main implements Serializable {// TODO Calc spending/offers.
 		bottomPanel.add(startDaily);
 		history.add(bottomPanel, BorderLayout.SOUTH);
 		history.update();
-		history.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		history.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		history.addWindowListener(new WindowListener() {
 			@Override
 			public void windowActivated(WindowEvent arg0) {

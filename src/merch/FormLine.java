@@ -48,6 +48,7 @@ public abstract class FormLine extends JPanel {
 		notifySpot = new JPanel() {
 			private static final long serialVersionUID = -5602302297053566788L;
 
+			@Override
 			public Dimension getPreferredSize() {
 				return new Dimension(60, 60);
 			}

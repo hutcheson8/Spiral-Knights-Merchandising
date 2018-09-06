@@ -122,7 +122,7 @@ public final class Record implements Serializable {
 	}
 
 	public final int getNumListings() {
-		return stocked ? numListings : 0;
+		return numListings;
 	}
 
 	public Record(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timestamp, Record previous,
@@ -141,7 +141,6 @@ public final class Record implements Serializable {
 		if (previous == null) {
 			lotsSold = 0;
 			profit = 0;
-			listingPrice = 0;
 			loss = 0;
 			numListings = recordItem.getStartingListings();
 			costPlusPercent = 1f;
@@ -149,13 +148,16 @@ public final class Record implements Serializable {
 		} else {
 			lotsSold = previous.getFinalListings() - lotsExpired - leftovers;
 			profit = lotsSold * (notYetExpired.getPrice() * 9 / 10 - cost);
-			listingPrice = max(recordItem.getStarLevelBasedListingPrice(), (int) (previous.getPrice() * .05f + .5f));
-			loss = lotsExpired * listingPrice;
+			Record justExpired = getJustExpired();
+			int expiredListingPrice = 0;
+			if (justExpired != null) {
+				expiredListingPrice = justExpired.getListingPrice();
+			}
+			loss = lotsExpired * expiredListingPrice;
 			int preNumListings = previous.getNumListings();
 			if (lotsExpired > 0) {// Expired
 				preNumListings -= lotsExpired;
-				Record justExpired = getJustExpired();
-				if (justExpired.getUndercut() != 0) {
+				if (justExpired != null && justExpired.getUndercut() != 0) {
 					float expiredCasePrice = justExpired.getExpiredCasePrice();
 					if (previous.isUsingCostPlus()) {
 						undercutMargin = previous.getUndercutMargin();
@@ -187,6 +189,7 @@ public final class Record implements Serializable {
 		int undercutMarginPrice = (int) (cost + (aHPrice * recordItem.getQuantityPerListing() - cost) * undercutMargin);
 		usingCostPlus = costPlusPrice < undercutMarginPrice;
 		price = usingCostPlus ? costPlusPrice : undercutMarginPrice;
+		listingPrice = max(recordItem.getStarLevelBasedListingPrice(), (int) (price * .05f + .5f));
 		if (notYetExpired != null) {
 			notYetExpired.setUndercut(aHPrice * recordItem.getQuantityPerListing());
 			if (price < notYetExpired.getPrice()) {

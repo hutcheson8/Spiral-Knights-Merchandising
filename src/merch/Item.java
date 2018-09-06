@@ -4,8 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Item implements Serializable {// TODO Calc spending/offers use
-											// merch.Record.getListingPrice()
+public class Item implements Serializable {
 	private static final long serialVersionUID = 402088475468107547L;
 	private ArrayList<Record> records = new ArrayList<Record>();
 	private final static String POSINT = "Please enter a positive integer.";
@@ -75,7 +74,15 @@ public class Item implements Serializable {// TODO Calc spending/offers use
 				}
 			} });
 	private final String name;
-	private final int energyPerSDPurchase, quantityPerPurchase, quantityPerListing, starLevel, startingListings;
+	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel, startingListings;
+
+	public final int getRequiredCrownReserves() {
+		return getCurrentListings() * mostRecentRecord().getListingPrice();
+	}
+
+	public final int getRequiredEnergyReserves() {
+		return getCurrentListings() * quantityPerListing * energyPerSDPurchase / quantityPerSDPurchase;
+	}
 
 	public final int getNumToSell() {
 		return mostRecentRecord().getNumToSell();
@@ -143,7 +150,7 @@ public class Item implements Serializable {// TODO Calc spending/offers use
 	}
 
 	public final int getSDCRCostPerListing(float energyPrice) {
-		return (int) (energyPerSDPurchase * energyPrice * quantityPerListing / quantityPerPurchase);
+		return (int) (energyPerSDPurchase * energyPrice * quantityPerListing / quantityPerSDPurchase);
 	}
 
 	public final int getQuantityPerListing() {
@@ -173,7 +180,7 @@ public class Item implements Serializable {// TODO Calc spending/offers use
 		String[] result = FORM.result();
 		name = result[0];
 		energyPerSDPurchase = Integer.parseInt(result[1]);
-		quantityPerPurchase = Integer.parseInt(result[2]);
+		quantityPerSDPurchase = Integer.parseInt(result[2]);
 		quantityPerListing = Integer.parseInt(result[3]);
 		starLevel = Integer.parseInt(result[4]);
 		startingListings = Integer.parseInt(result[5]);
