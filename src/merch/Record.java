@@ -16,12 +16,10 @@ public final class Record implements Serializable {
 	private final boolean stocked, usingCostPlus;
 	private final Date timestamp;
 	private int undercut;
-	// private final Float energyPrice;
 	private final float undercutMargin, costPlusPercent;
 
 	public Record(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timestamp, Record previous,
 			Item recordItem) throws Exception {
-		// this.energyPrice = energyPrice;
 		this.previous = previous;
 		this.timestamp = timestamp;
 		if (aHPrice == 0) {
