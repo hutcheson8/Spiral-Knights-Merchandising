@@ -344,7 +344,7 @@ public class Main implements Serializable {
 		for (int x = 0; x < items.size(); x++) {
 			Item i = items.get(x);
 			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
-			if (aHPrice < i.getSDCRCostPerListing(energyPrice)) {
+			if (aHPrice * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice)) {
 				throw new GoodDealException(i, aHPrice, energyPrice);
 			}
 		}
