@@ -74,18 +74,15 @@ public final class Record implements Serializable {
 			}
 			numListings = preNumListings;
 		}
-		int costPlusPrice = (int) (cost * (1 + costPlusPercent));
-		int undercutMarginPrice = (int) (cost + (aHPrice * recordItem.getQuantityPerListing() - cost) * undercutMargin);
+		int costPlusPrice = (int) (cost * 10 / 9 * (1 + costPlusPercent));
+		int undercutMarginPrice = (int) (cost * 10 / 9
+				+ (aHPrice * recordItem.getQuantityPerListing() - cost * 10 / 9) * undercutMargin);
 		usingCostPlus = costPlusPrice < undercutMarginPrice;
 		price = usingCostPlus ? costPlusPrice : undercutMarginPrice;
 		listingPrice = max(recordItem.getStarLevelBasedListingPrice(), (int) (price * .05f + .5f));
 		if (notYetExpired != null) {
 			notYetExpired.setUndercut(aHPrice * recordItem.getQuantityPerListing());
-			if (price < notYetExpired.getPrice() && leftovers > 0) {
-				stocked = false;
-			} else {
-				stocked = true;
-			}
+			stocked = !((price < notYetExpired.getPrice() && leftovers > 0) || price < cost * 10 / 9);
 		} else {
 			stocked = true;
 		}
