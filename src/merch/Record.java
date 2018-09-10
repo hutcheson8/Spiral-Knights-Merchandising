@@ -22,9 +22,6 @@ public final class Record implements Serializable {
 			Item recordItem) throws Exception {
 		this.previous = previous;
 		this.timestamp = timestamp;
-		if (aHPrice == 0) {
-			aHPrice = previous.getAHPrice();
-		}
 		this.aHPrice = aHPrice;
 		lotsExpired = expiredItems / recordItem.getQuantityPerListing();
 		cost = recordItem.getSDCRCostPerListing(energyPrice);
@@ -84,7 +81,7 @@ public final class Record implements Serializable {
 		listingPrice = max(recordItem.getStarLevelBasedListingPrice(), (int) (price * .05f + .5f));
 		if (notYetExpired != null) {
 			notYetExpired.setUndercut(aHPrice * recordItem.getQuantityPerListing());
-			if (price < notYetExpired.getPrice()) {
+			if (price < notYetExpired.getPrice() && leftovers > 0) {
 				stocked = false;
 			} else {
 				stocked = true;
@@ -129,7 +126,7 @@ public final class Record implements Serializable {
 		return stocked;
 	}
 
-	private final int getAHPrice() {
+	public final int getAHPrice() {
 		return aHPrice;
 	}
 

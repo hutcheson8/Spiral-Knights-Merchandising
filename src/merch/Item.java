@@ -76,6 +76,10 @@ public class Item implements Serializable {
 	private final String name;
 	private ArrayList<Record> records = new ArrayList<Record>();
 
+	public int getMostRecentAHPrice() {
+		return mostRecentRecord().getAHPrice();
+	}
+
 	public Item() throws CancelException {
 		String[] result = FORM.result();
 		name = result[0];
