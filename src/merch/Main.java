@@ -107,7 +107,6 @@ public class Main implements Serializable {
 		}
 	};
 	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price" };
-	// TODO Throw an exception and catch with a window for good auctions.
 	private static final long serialVersionUID = -7878541532400694122L;
 
 	private Float energyPrice;
@@ -344,12 +343,10 @@ public class Main implements Serializable {
 		for (int x = 0; x < items.size(); x++) {
 			Item i = items.get(x);
 			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
-			if (aHPrice == 0) {
+			if (aHPrice == 0)
 				aHPrice = i.getMostRecentAHPrice();
-			}
-			if (aHPrice * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice)) {
+			if (aHPrice * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice))
 				throw new GoodDealException(i, aHPrice, energyPrice);
-			}
 		}
 		for (int x = 0; x < items.size(); x++) {
 			items.get(x).addRecord(Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText()),
