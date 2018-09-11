@@ -47,14 +47,9 @@ public final class Record implements Serializable {
 			if (lotsExpired > 0) {// Expired
 				preNumListings -= lotsExpired;
 				if (justExpired != null && justExpired.getUndercut() != 0) {
-					float expiredCasePrice = justExpired.getExpiredCasePrice();
-					if (previous.isUsingCostPlus()) {
-						undercutMargin = previous.getUndercutMargin();
-						costPlusPercent = max(min(expiredCasePrice, previous.getCostPlusPercent()), .05f);
-					} else {
-						undercutMargin = max(min(expiredCasePrice, previous.getUndercutMargin()), .05f);
-						costPlusPercent = previous.getCostPlusPercent();
-					}
+					float[] expiredCasePrice = justExpired.getExpiredCasePrice();
+					undercutMargin = max(min(expiredCasePrice[1], previous.getUndercutMargin()), .05f);
+					costPlusPercent = max(min(expiredCasePrice[0], previous.getCostPlusPercent()), .05f);
 				} else {
 					undercutMargin = previous.getUndercutMargin();
 					costPlusPercent = previous.getCostPlusPercent();
@@ -127,25 +122,25 @@ public final class Record implements Serializable {
 		return aHPrice;
 	}
 
-	private final float getExpiredCasePrice() {
-		return usingCostPlus ? ((float) undercut) / cost - 1.01f
-				: (undercut - cost) * undercutMargin / (price - cost) - .01f;
+	private final float[] getExpiredCasePrice() {
+		float[] flo = { ((float) undercut) / cost - 1.01f, (undercut - cost) * undercutMargin / (price - cost) - .01f };
+		return flo;
 	}
 
 	/*
-	 * private final Record getDayOfWeekRecord() { GregorianCalendar converter =
-	 * new GregorianCalendar(); converter.setTime(timestamp); int day =
+	 * private final Record getDayOfWeekRecord() { GregorianCalendar converter = new
+	 * GregorianCalendar(); converter.setTime(timestamp); int day =
 	 * converter.get(Calendar.DAY_OF_WEEK); for (Record toCheck = getPrevious();
 	 * toCheck != null; toCheck = toCheck.getPrevious()) {
 	 * converter.setTime(toCheck.getTimestamp()); int dayToCheck =
-	 * converter.get(Calendar.DAY_OF_WEEK); if (day == dayToCheck) return
-	 * toCheck; } return null; }
+	 * converter.get(Calendar.DAY_OF_WEEK); if (day == dayToCheck) return toCheck; }
+	 * return null; }
 	 * 
-	 * private final Record getLastYearRecord() { GregorianCalendar converter =
-	 * new GregorianCalendar(); converter.setTime(timestamp); int day =
+	 * private final Record getLastYearRecord() { GregorianCalendar converter = new
+	 * GregorianCalendar(); converter.setTime(timestamp); int day =
 	 * converter.get(Calendar.DAY_OF_WEEK); int week =
-	 * converter.get(Calendar.WEEK_OF_YEAR); for (Record toCheck =
-	 * getPrevious(); toCheck != null; toCheck = toCheck.getPrevious()) {
+	 * converter.get(Calendar.WEEK_OF_YEAR); for (Record toCheck = getPrevious();
+	 * toCheck != null; toCheck = toCheck.getPrevious()) {
 	 * converter.setTime(toCheck.getTimestamp()); int dayToCheck =
 	 * converter.get(Calendar.DAY_OF_WEEK); int weekToCheck =
 	 * converter.get(Calendar.WEEK_OF_YEAR); if (day == dayToCheck && week ==
