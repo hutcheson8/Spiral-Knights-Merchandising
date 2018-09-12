@@ -76,10 +76,6 @@ public class Item implements Serializable {
 	private final String name;
 	private ArrayList<Record> records = new ArrayList<Record>();
 
-	public int getMostRecentAHPrice() {
-		return mostRecentRecord().getAHPrice();
-	}
-
 	public Item() throws CancelException {
 		String[] result = FORM.result();
 		name = result[0];
@@ -90,33 +86,33 @@ public class Item implements Serializable {
 		startingListings = Integer.parseInt(result[5]);
 	}
 
-	public final void addRecord(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timeStamp)
-			throws Exception {
+	public final void addRecord(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timeStamp) {
 		records.add(new Record(expiredItems, leftovers, aHPrice, energyPrice, timeStamp, mostRecentRecord(), this));
 	}
 
 	public final float getCurrentCostPlusPercent() {
-		if (mostRecentRecord() != null)
-			return mostRecentRecord().getCostPlusPercent();
-		return 0;
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getCostPlusPercent();
 	}
 
 	public final int getCurrentListings() {
-		if (mostRecentRecord() != null)
-			return mostRecentRecord().getNumListings();
-		return 0;
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getNumListings();
 	}
 
 	public final int getCurrentPrice() {
-		if (mostRecentRecord() != null)
-			return mostRecentRecord().getPrice();
-		return 0;
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getPrice();
 	}
 
 	public final float getCurrentUndercutMargin() {
-		if (mostRecentRecord() != null)
-			return mostRecentRecord().getUndercutMargin();
-		return 0;
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getUndercutMargin();
+	}
+
+	public int getMostRecentAHPrice(float energyPrice) {
+		Record recent = mostRecentRecord();
+		return recent == null ? getSDCRCostPerListing(energyPrice) * 2 : recent.getAHPrice();
 	}
 
 	public final String getName() {

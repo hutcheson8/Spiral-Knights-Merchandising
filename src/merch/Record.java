@@ -19,7 +19,7 @@ public final class Record implements Serializable {
 	private final float undercutMargin, costPlusPercent;
 
 	public Record(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timestamp, Record previous,
-			Item recordItem) throws Exception {
+			Item recordItem) {
 		this.previous = previous;
 		this.timestamp = timestamp;
 		this.aHPrice = aHPrice;
@@ -86,6 +86,10 @@ public final class Record implements Serializable {
 		netProfit = profit - loss;
 	}
 
+	public final int getAHPrice() {
+		return aHPrice;
+	}
+
 	public final float getCostPlusPercent() {
 		return costPlusPercent;
 	}
@@ -116,10 +120,6 @@ public final class Record implements Serializable {
 
 	public final boolean isStocked() {
 		return stocked;
-	}
-
-	public final int getAHPrice() {
-		return aHPrice;
 	}
 
 	private final float[] getExpiredCasePrice() {

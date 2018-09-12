@@ -106,6 +106,9 @@ public class Main implements Serializable {
 		public void mouseReleased(MouseEvent e) {
 		}
 	};
+	/**
+	 * { "Expired Items", "Leftovers", "AH Price" }
+	 */
 	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price" };
 	private static final long serialVersionUID = -7878541532400694122L;
 
@@ -340,24 +343,27 @@ public class Main implements Serializable {
 	private final void record(JTextField[] data) throws Exception {
 		energyPrice = ((float) Integer.parseInt(data[data.length - 1].getText())) / 100;
 		Date timeStamp = new Date();
-		for (int x = 0; x < items.size(); x++) {
+		int[] expiredItems = new int[items.size()];
+		int[] leftovers = new int[items.size()];
+		int[] aHPrice = new int[items.size()];
+		for (int x = 0; x < items
+				.size(); x++) {/* Throwing potential exceptions at once to avoid partial record creation. */
 			Item i = items.get(x);
-			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
-			if (aHPrice == 0)
-				aHPrice = i.getMostRecentAHPrice();
-			if (aHPrice * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice))
-				throw new GoodDealException(i, aHPrice, energyPrice);
+			expiredItems[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText());
+			leftovers[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText());
+			aHPrice[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
+			if (aHPrice[x] == 0)
+				aHPrice[x] = i.getMostRecentAHPrice(energyPrice);
+			if (aHPrice[x] * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice))
+				throw new GoodDealException(i, aHPrice[x], energyPrice);
 		}
-		for (int x = 0; x < items.size(); x++) {
-			items.get(x).addRecord(Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText()),
-					Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText()),
-					Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()), energyPrice, timeStamp);
+		for (int x = 0; x < items.size(); x++) {// Now that input definitely works, create all records at once.
+			items.get(x).addRecord(expiredItems[x], leftovers[x], aHPrice[x], energyPrice, timeStamp);
 		}
 	}
 
 	private final void run() {
 		new JFXPanel();
-		// Allocate objects for all windows
 		JFrame reminder = new JFrame("Reminder");
 		History history = new History("History", new AbstractTableModel() {
 			private static final long serialVersionUID = -160380739584172259L;
