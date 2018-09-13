@@ -59,20 +59,9 @@ public class Item implements Serializable {
 						return false;
 					}
 				}
-			}, new FormLine("Starting Listings", POSINT) {
-				private static final long serialVersionUID = -9110165369158106907L;
-
-				@Override
-				protected boolean verify() {
-					try {
-						return Integer.parseInt(getInput()) > 0;
-					} catch (Exception e) {
-						return false;
-					}
-				}
 			} });
 	private static final long serialVersionUID = 402088475468107547L;
-	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel, startingListings;
+	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel;
 	private final String name;
 	private ArrayList<Record> records = new ArrayList<Record>();
 
@@ -83,7 +72,6 @@ public class Item implements Serializable {
 		quantityPerSDPurchase = Integer.parseInt(result[2]);
 		quantityPerListing = Integer.parseInt(result[3]);
 		starLevel = Integer.parseInt(result[4]);
-		startingListings = Integer.parseInt(result[5]);
 	}
 
 	public final void addRecord(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timeStamp) {
@@ -170,10 +158,6 @@ public class Item implements Serializable {
 			break;
 		}
 		return (int) (basePrice * quantityPerListing * 2 + .5);
-	}
-
-	public final int getStartingListings() {
-		return startingListings;
 	}
 
 	public final boolean isCurrentlyStocked() {
