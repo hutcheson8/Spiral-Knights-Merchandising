@@ -46,6 +46,8 @@ public final class Record implements Serializable {
 			int preNumListings = previous.getNumListings();
 			if (lotsExpired > 0) {// Expired
 				preNumListings -= lotsExpired;
+				if (preNumListings == 0)
+					preNumListings = 1;
 				if (justExpired != null && justExpired.getUndercut() != 0) {
 					float[] expiredCasePrice = justExpired.getExpiredCasePrice();
 					undercutMargin = max(min(expiredCasePrice[1], previous.getUndercutMargin()), .05f);

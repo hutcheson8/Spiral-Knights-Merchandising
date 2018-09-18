@@ -186,7 +186,7 @@ public class Main implements Serializable {
 		sellPrompt.add(listings);
 		sellPrompt.add(price);
 		for (Item i : items) {
-			if (i.isCurrentlyStocked()) {
+			if (i.isCurrentlyStocked() && i.getNumToSell() > 0) {
 				JLabel aName = new JLabel(i.getName());
 				aName.addMouseListener(COPIER);
 				JLabel someListings = new JLabel(i.getNumToSell() + "");
