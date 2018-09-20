@@ -353,7 +353,7 @@ public class Main implements Serializable {
 			leftovers[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText());
 			aHPrice[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
 			if (aHPrice[x] == 0)
-				aHPrice[x] = i.getMostRecentAHPrice(energyPrice);
+				aHPrice[x] = (int) (i.getMostRecentAHPrice(energyPrice) * 1.01);
 			if (aHPrice[x] * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice))
 				throw new GoodDealException(i, aHPrice[x], energyPrice);
 		}
