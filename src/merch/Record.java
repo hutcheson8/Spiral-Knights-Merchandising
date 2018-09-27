@@ -56,7 +56,7 @@ public final class Record implements Serializable {
 					undercutMargin = previous.getUndercutMargin();
 					costPlusPercent = previous.getCostPlusPercent();
 				}
-			} else if (previous.isStocked() && leftovers == 0) {// Sold out
+			} else if (previous.isStocked() && previous.isRecentEnough(timestamp) && leftovers == 0) {// Sold out
 				preNumListings++;
 				if (previous.isUsingCostPlus()) {
 					undercutMargin = previous.getUndercutMargin();
@@ -118,6 +118,10 @@ public final class Record implements Serializable {
 
 	public final float getUndercutMargin() {
 		return undercutMargin;
+	}
+
+	public boolean isRecentEnough(Date timestamp) {
+		return this.timestamp.toInstant().isAfter(timestamp.toInstant().minusSeconds(60 * 60 * 28));
 	}
 
 	public final boolean isStocked() {
