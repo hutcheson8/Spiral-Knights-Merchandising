@@ -457,6 +457,7 @@ public class Main implements Serializable {
 			}
 		});
 		reminder.pack();
+		reminder.setResizable(false);
 		reminder.setLocationRelativeTo(null);
 		// Setup window for history/stats
 		history.setLayout(new BorderLayout());
