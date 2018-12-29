@@ -2,3 +2,4 @@ bin/
 data.srl
 .project
 .classpath
+.settings/

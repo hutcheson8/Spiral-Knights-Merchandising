@@ -109,7 +109,7 @@ public class Main implements Serializable {
 	/**
 	 * { "Expired Items", "Leftovers", "AH Price" }
 	 */
-	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price" };
+	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price", "AH Items/Listing" };
 	private static final long serialVersionUID = -7878541532400694122L;
 
 	private Float energyPrice;
@@ -139,6 +139,7 @@ public class Main implements Serializable {
 		JTextField energyPrice = new JTextField();
 		textFields[textFields.length - 1] = energyPrice;
 		daily.add(energyPrice);
+		daily.add(new JPanel());
 		JButton submit = new JButton("Submit");
 		submit.addActionListener(new ActionListener() {
 			@Override
@@ -168,7 +169,7 @@ public class Main implements Serializable {
 			}
 		});
 		daily.add(cancel);
-		for (int x = 0; x < DAILY_COLUMNS.length - 3; x++) {
+		for (int x = 0; x < DAILY_COLUMNS.length - 4; x++) {
 			daily.add(new JPanel());
 		}
 		daily.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -346,12 +347,14 @@ public class Main implements Serializable {
 		int[] expiredItems = new int[items.size()];
 		int[] leftovers = new int[items.size()];
 		int[] aHPrice = new int[items.size()];
-		for (int x = 0; x < items
-				.size(); x++) {/* Throwing potential exceptions at once to avoid partial record creation. */
+		for (int x = 0; x < items.size(); x++) {
+			// Throwing potential exceptions at once to avoid partial record creation.
+			int aHItems;
 			Item i = items.get(x);
 			expiredItems[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText());
 			leftovers[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText());
-			aHPrice[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText());
+			aHItems = Integer.parseInt(data[x * DAILY_COLUMNS.length + 3].getText());
+			aHPrice[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()) / aHItems;
 			if (aHPrice[x] == 0)
 				aHPrice[x] = (int) (i.getMostRecentAHPrice(energyPrice) * 1.01);
 			if (aHPrice[x] * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice))
@@ -387,12 +390,16 @@ public class Main implements Serializable {
 					case 1:
 						return "Net Profit to Date";
 					case 2:
-						return "# of Listings";
+						return "Net Profit One Week";
 					case 3:
-						return "Price";
+						return "Net Profit Today";
 					case 4:
-						return "Cost Plus %";
+						return "# of Listings";
 					case 5:
+						return "Price";
+					case 6:
+						return "Cost Plus %";
+					case 7:
 						return "Undercut Margin";
 					}
 				Item i = items.get(row - 1);
@@ -402,12 +409,16 @@ public class Main implements Serializable {
 				case 1:
 					return i.getNetProfitToDate();
 				case 2:
-					return i.getCurrentListings();
+					return i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
 				case 3:
-					return i.getCurrentPrice();
+					return i.getNetProfitSince(null);
 				case 4:
-					return i.getCurrentCostPlusPercent();
+					return i.getCurrentListings();
 				case 5:
+					return i.getCurrentPrice();
+				case 6:
+					return i.getCurrentCostPlusPercent();
+				case 7:
 					return i.getCurrentUndercutMargin();
 				}
 				return null;

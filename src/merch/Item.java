@@ -109,9 +109,18 @@ public class Item implements Serializable {
 
 	public final int getNetProfitToDate() {
 		int cumulate = 0;
-		for (Record r : records) {
+		for (Record r : records)
 			cumulate += r.getNetProfit();
-		}
+		return cumulate;
+	}
+
+	public final int getNetProfitSince(Date date) {
+		if (date == null)
+			return mostRecentRecord().getNetProfit();
+		int cumulate = 0;
+		for (Record r : records)
+			if (r.getTimestamp().after(date))
+				cumulate += r.getNetProfit();
 		return cumulate;
 	}
 

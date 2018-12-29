@@ -185,7 +185,7 @@ public final class Record implements Serializable {
 		return previous;
 	}
 
-	private final Date getTimestamp() {
+	public final Date getTimestamp() {
 		return timestamp;
 	}
 
