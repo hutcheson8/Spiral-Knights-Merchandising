@@ -178,4 +178,8 @@ public class Item implements Serializable {
 			return null;
 		return records.get(records.size() - 1);
 	}
+
+	public final Date lastUpdate() {
+		return mostRecentRecord().getTimestamp();
+	}
 }

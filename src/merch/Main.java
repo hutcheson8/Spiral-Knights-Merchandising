@@ -488,6 +488,7 @@ public class Main implements Serializable {
 			}
 		});
 		bottomPanel.add(newItem);
+		JLabel lastUpdate = new JLabel("Last Update: " + items.get(0).lastUpdate());
 		JButton startDaily = new JButton("Start Daily");
 		startDaily.addActionListener(new ActionListener() {
 			@Override
@@ -496,11 +497,13 @@ public class Main implements Serializable {
 					@Override
 					public void run() {
 						history.update();
+						lastUpdate.setText("Last Update: " + items.get(0).lastUpdate());
 					}
 				});
 			}
 		});
 		bottomPanel.add(startDaily);
+		bottomPanel.add(lastUpdate);
 		history.add(bottomPanel, BorderLayout.SOUTH);
 		history.update();
 		history.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
