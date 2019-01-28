@@ -166,7 +166,7 @@ public class Item implements Serializable {
 			basePrice = 250;
 			break;
 		}
-		return (int) (basePrice * quantityPerListing * 2 + .5);
+		return (int) (basePrice * quantityPerListing * 2 + .5f);
 	}
 
 	public final boolean isCurrentlyStocked() {
