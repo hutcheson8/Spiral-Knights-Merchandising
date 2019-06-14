@@ -133,11 +133,13 @@ public class Item implements Serializable {
 	}
 
 	public final int getRequiredCrownReserves() {
-		return getCurrentListings() * mostRecentRecord().getListingPrice();
+		return (getCurrentListings() + mostRecentRecord().getNumListingsNotStocked())
+				* mostRecentRecord().getListingPrice();
 	}
 
 	public final int getRequiredEnergyReserves() {
-		return getCurrentListings() * quantityPerListing * energyPerSDPurchase / quantityPerSDPurchase;
+		return (getCurrentListings() + mostRecentRecord().getNumListingsNotStocked()) * quantityPerListing
+				* energyPerSDPurchase / quantityPerSDPurchase;
 	}
 
 	public final int getSDCRCostPerListing(float energyPrice) {

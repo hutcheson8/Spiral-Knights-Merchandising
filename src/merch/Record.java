@@ -153,6 +153,10 @@ public final class Record implements Serializable {
 	 * weekToCheck) return toCheck; } return null; }
 	 */
 
+	public final int getNumListingsNotStocked() {
+		return numListings - finalListings;
+	}
+
 	private final int getFinalListings() {
 		return finalListings;
 	}
