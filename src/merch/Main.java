@@ -373,7 +373,7 @@ public class Main implements Serializable {
 
 			@Override
 			public int getColumnCount() {
-				return 6;
+				return 8;
 			}
 
 			@Override
