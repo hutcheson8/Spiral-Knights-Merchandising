@@ -107,7 +107,7 @@ public class Main implements Serializable {
 		}
 	};
 	/**
-	 * { "Expired Items", "Leftovers", "AH Price" }
+	 * { "Expired Items", "Leftovers", "AH Price", "AH Items/Listing" }
 	 */
 	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price", "AH Items/Listing" };
 	private static final long serialVersionUID = -7878541532400694122L;
@@ -378,7 +378,7 @@ public class Main implements Serializable {
 
 			@Override
 			public int getRowCount() {
-				return items.size() + 1;
+				return items.size() + 2;
 			}
 
 			@Override
@@ -402,6 +402,41 @@ public class Main implements Serializable {
 					case 7:
 						return "Undercut Margin";
 					}
+				if (row == getRowCount() - 1) {
+					int sum = 0;
+					switch (column) {
+					case 0:
+						return "Total";
+					case 1:
+						for (Item i : items) {
+							sum += i.getNetProfitToDate();
+						}
+						break;
+					case 2:
+						for (Item i : items) {
+							sum += i.getNetProfitSince(
+									Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
+						}
+						break;
+					case 3:
+						for (Item i : items) {
+							sum += i.getNetProfitSince(null);
+						}
+						break;
+					case 4:
+						for (Item i : items) {
+							sum += i.getCurrentListings();
+						}
+						break;
+					case 5:
+						return "N/A";
+					case 6:
+						return "N/A";
+					case 7:
+						return "N/A";
+					}
+					return sum;
+				}
 				Item i = items.get(row - 1);
 				switch (column) {
 				case 0:
