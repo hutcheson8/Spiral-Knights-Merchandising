@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.function.Supplier;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -39,8 +38,6 @@ import javafx.scene.input.DataFormat;
 public class Main implements Serializable {
 
 	private final ArrayList<Item> items = new ArrayList<Item>();
-	private final Supplier<String> lastUpdateText = () -> "Last Update: " + items.get(0).lastUpdate() + " ("
-			+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000) + " hours ago)";
 
 	private final class FloatHolder {
 		float f;
@@ -450,6 +447,11 @@ public class Main implements Serializable {
 		}
 	}
 
+	private final String lastUpdateText() {
+		return "Last Update: " + items.get(0).lastUpdate() + " ("
+				+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000) + " hours ago)";
+	}
+
 	private final void run() {
 		new JFXPanel();
 		JFrame reminder = new JFrame("Reminder");
@@ -512,12 +514,12 @@ public class Main implements Serializable {
 			});
 		});
 		bottomPanel.add(newItem);
-		JLabel lastUpdate = new JLabel(lastUpdateText.get());
+		JLabel lastUpdate = new JLabel(lastUpdateText());
 		JButton startDaily = new JButton("Start Daily");
 		startDaily.addActionListener((e) -> {
 			constructDaily(() -> {
 				history.update();
-				lastUpdate.setText(lastUpdateText.get());
+				lastUpdate.setText(lastUpdateText());
 			});
 		});
 		bottomPanel.add(startDaily);
