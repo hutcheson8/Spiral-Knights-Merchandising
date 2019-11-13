@@ -172,23 +172,20 @@ public class Main implements Serializable {
 
 	private final void constructSellPrompt() {
 		JFrame sellPrompt = new JFrame("Sell");
-		sellPrompt.setLayout(new GridLayout(0, 4));
-		JLabel name = new JLabel("Name"), listings = new JLabel("# Listings"), numItems = new JLabel("# Items"),
+		sellPrompt.setLayout(new GridLayout(0, 3));
+		JLabel name = new JLabel("Name"), numItems = new JLabel("# Items"),
 				price = new JLabel("Price");
 		sellPrompt.add(name);
-		sellPrompt.add(listings);
 		sellPrompt.add(numItems);
 		sellPrompt.add(price);
 		for (Item i : items) {
 			if (i.isCurrentlyStocked() && i.getNumToSell() > 0) {
 				JLabel aName = new JLabel(i.getName());
 				aName.addMouseListener(COPIER);
-				JLabel someListings = new JLabel(i.getNumToSell() + "");
 				JLabel someItems = new JLabel(i.getNumToSell() * i.getQuantityPerListing() + "");
 				JLabel aPrice = new JLabel(i.getCurrentPrice() + "");
 				aPrice.addMouseListener(COPIER);
 				sellPrompt.add(aName);
-				sellPrompt.add(someListings);
 				sellPrompt.add(someItems);
 				sellPrompt.add(aPrice);
 			}
