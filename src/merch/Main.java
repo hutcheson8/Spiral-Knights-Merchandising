@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -82,11 +80,8 @@ public class Main implements Serializable {
 		public void mouseClicked(MouseEvent e) {
 			HashMap<DataFormat, Object> data = new HashMap<DataFormat, Object>();
 			data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					Clipboard.getSystemClipboard().setContent(data);
-				}
+			Platform.runLater(() -> {
+				Clipboard.getSystemClipboard().setContent(data);
 			});
 		}
 
@@ -141,33 +136,25 @@ public class Main implements Serializable {
 		daily.add(energyPrice);
 		daily.add(new JPanel());
 		JButton submit = new JButton("Submit");
-		submit.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					record(textFields);
-					update.run();
-					daily.setVisible(false);
-					constructSellPrompt();
-				} catch (Exception f) {
-					if (f instanceof GoodDealException) {
-						GoodDealException deal = (GoodDealException) f;
-						deal.showDealMessage();
-					} else {
-						f.printStackTrace();
-						JOptionPane.showMessageDialog(null, "Incorrect Input!");
-					}
+		submit.addActionListener((e) -> {
+			try {
+				record(textFields);
+				update.run();
+				daily.setVisible(false);
+				constructSellPrompt();
+			} catch (Exception f) {
+				if (f instanceof GoodDealException) {
+					GoodDealException deal = (GoodDealException) f;
+					deal.showDealMessage();
+				} else {
+					f.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Incorrect Input!");
 				}
 			}
 		});
 		daily.add(submit);
 		JButton cancel = new JButton("Cancel");
-		cancel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				daily.setVisible(false);
-			}
-		});
+		cancel.addActionListener((e) -> daily.setVisible(false));
 		daily.add(cancel);
 		for (int x = 0; x < DAILY_COLUMNS.length - 4; x++) {
 			daily.add(new JPanel());
@@ -259,21 +246,18 @@ public class Main implements Serializable {
 		FloatHolder spendingCrowns = new FloatHolder();
 		spendingCrowns.setFloat(0);
 		JButton combine = new JButton("Combine");
-		combine.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					spendingCrowns.setFloat(Integer.parseInt(crownRemain.getText())
-							+ Integer.parseInt(energyRemain.getText()) * energyPrice);
-				} catch (Exception f) {
-					JOptionPane.showMessageDialog(null, "Incorrect Input!");
-				}
-				crownRemain.setText("");
-				energyRemain.setText("");
-				spendingOffers.validate();
-				spendingOffers.pack();
-				spendingOffers.repaint();
+		combine.addActionListener((e) -> {
+			try {
+				spendingCrowns.setFloat(Integer.parseInt(crownRemain.getText())
+						+ Integer.parseInt(energyRemain.getText()) * energyPrice);
+			} catch (Exception f) {
+				JOptionPane.showMessageDialog(null, "Incorrect Input!");
 			}
+			crownRemain.setText("");
+			energyRemain.setText("");
+			spendingOffers.validate();
+			spendingOffers.pack();
+			spendingOffers.repaint();
 		});
 		spendingOffers.add(combine);
 		spendingOffers.add(new JLabel() {
@@ -298,29 +282,25 @@ public class Main implements Serializable {
 		spendingOffers.add(spentCrowns);
 		JTextField spentEnergy = new JTextField();
 		spendingOffers.add(spentEnergy);
-		spend.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				float spentCrownsOutput;
-				try {
-					spentCrownsOutput = Integer.parseInt(spentCrowns.getText());
-				} catch (Exception f) {
-					spentCrownsOutput = 0;
-				}
-				float spentEnergyOutput;
-				try {
-					spentEnergyOutput = Integer.parseInt(spentEnergy.getText());
-				} catch (Exception f) {
-					spentEnergyOutput = 0;
-				}
-				spendingCrowns
-						.setFloat(spendingCrowns.getFloat() - spentCrownsOutput - spentEnergyOutput * energyPrice);
-				spentCrowns.setText("");
-				spentEnergy.setText("");
-				spendingOffers.validate();
-				spendingOffers.pack();
-				spendingOffers.repaint();
+		spend.addActionListener((e) -> {
+			float spentCrownsOutput;
+			try {
+				spentCrownsOutput = Integer.parseInt(spentCrowns.getText());
+			} catch (Exception f) {
+				spentCrownsOutput = 0;
 			}
+			float spentEnergyOutput;
+			try {
+				spentEnergyOutput = Integer.parseInt(spentEnergy.getText());
+			} catch (Exception f) {
+				spentEnergyOutput = 0;
+			}
+			spendingCrowns.setFloat(spendingCrowns.getFloat() - spentCrownsOutput - spentEnergyOutput * energyPrice);
+			spentCrowns.setText("");
+			spentEnergy.setText("");
+			spendingOffers.validate();
+			spendingOffers.pack();
+			spendingOffers.repaint();
 		});
 		spendingOffers.pack();
 		spendingOffers.setLocationRelativeTo(null);
@@ -507,32 +487,23 @@ public class Main implements Serializable {
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new FlowLayout());
 		JButton newItem = new JButton("Add Item");
-		newItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Form.request(new FormRequest() {
-					@Override
-					public void run() throws CancelException {
-						items.add(new Item());
-						history.update();
-					}
-				});
-			}
+		newItem.addActionListener((e) -> {
+			Form.request(new FormRequest() {
+				@Override
+				public void run() throws CancelException {
+					items.add(new Item());
+					history.update();
+				}
+			});
 		});
 		bottomPanel.add(newItem);
 		JLabel lastUpdate = new JLabel("Last Update: " + items.get(0).lastUpdate());
 		JButton startDaily = new JButton("Start Daily");
-		startDaily.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				constructDaily(new Runnable() {
-					@Override
-					public void run() {
-						history.update();
-						lastUpdate.setText("Last Update: " + items.get(0).lastUpdate());
-					}
-				});
-			}
+		startDaily.addActionListener((e) -> {
+			constructDaily(() -> {
+				history.update();
+				lastUpdate.setText("Last Update: " + items.get(0).lastUpdate());
+			});
 		});
 		bottomPanel.add(startDaily);
 		bottomPanel.add(lastUpdate);

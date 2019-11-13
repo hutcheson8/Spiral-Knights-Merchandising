@@ -6,8 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.function.Predicate;
 
 import javax.swing.JButton;
@@ -95,11 +93,8 @@ public class FormLine extends JPanel {
 		input = new JTextField(20);
 		add(input);
 		JButton helpButton = new JButton("Help");
-		helpButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				help();
-			}
+		helpButton.addActionListener((e) -> {
+			help();
 		});
 		add(helpButton);
 	}
