@@ -3,63 +3,30 @@ package merch;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.function.Predicate;
 
 public class Item implements Serializable {
 	private final static String POSINT = "Please enter a positive integer.";
+	private final static Predicate<String> POSINTPRD = (input) -> {
+		try {
+			return Integer.parseInt(input) > 0;
+		} catch (Exception e) {
+			return false;
+		}
+	};
 	private static final Form FORM = new Form(
-			new FormLine[] { new FormLine("Name", "Please enter a name for the item.") {
-				private static final long serialVersionUID = 3720008655250892788L;
-
-				@Override
-				protected boolean verify() {
-					return getInput().length() > 0;
-				}
-			}, new FormLine("Energy Price", POSINT) {
-				private static final long serialVersionUID = 7839955311053728024L;
-
-				@Override
-				protected boolean verify() {
-					try {
-						return Integer.parseInt(getInput()) > 0;
-					} catch (Exception e) {
-						return false;
-					}
-				}
-			}, new FormLine("Buy Quantity", POSINT) {
-				private static final long serialVersionUID = -2739686442653137487L;
-
-				@Override
-				protected boolean verify() {
-					try {
-						return Integer.parseInt(getInput()) > 0;
-					} catch (Exception e) {
-						return false;
-					}
-				}
-			}, new FormLine("Listing Quantity", POSINT) {
-				private static final long serialVersionUID = -7950977457271310608L;
-
-				@Override
-				protected boolean verify() {
-					try {
-						return Integer.parseInt(getInput()) > 0;
-					} catch (Exception e) {
-						return false;
-					}
-				}
-			}, new FormLine("Star Level", "Please enter a number between 0 and 5") {
-				private static final long serialVersionUID = -2538422211743533484L;
-
-				@Override
-				protected boolean verify() {
-					try {
-						int input = Integer.parseInt(getInput());
-						return 0 <= input && input <= 5;
-					} catch (Exception e) {
-						return false;
-					}
-				}
-			} });
+			new FormLine[] { new FormLine("Name", "Please enter a name for the item.", (input) -> {
+				return input.length() > 0;
+			}), new FormLine("Energy Price", POSINT, POSINTPRD), new FormLine("Buy Quantity", POSINT, POSINTPRD),
+					new FormLine("Listing Quantity", POSINT, POSINTPRD),
+					new FormLine("Star Level", "Please enter a number between 0 and 5. (inclusive)", (input) -> {
+						try {
+							int numInput = Integer.parseInt(input);
+							return 0 <= numInput && numInput <= 5;
+						} catch (Exception e) {
+							return false;
+						}
+					}) });
 	private static final long serialVersionUID = 402088475468107547L;
 	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel;
 	private final String name;

@@ -463,12 +463,9 @@ public class Main implements Serializable {
 		reminder.setLayout(new FlowLayout());
 		reminder.add(new JLabel("Feed pet and complete prestige mission."));
 		JButton reminderDone = new JButton("Done");
-		reminderDone.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				reminder.setVisible(false);
-				history.setVisible(true);
-			}
+		reminderDone.addActionListener((e) -> {
+			reminder.setVisible(false);
+			history.setVisible(true);
 		});
 		reminder.add(reminderDone);
 		reminder.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);

@@ -2,7 +2,6 @@ package merch;
 
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
@@ -29,8 +28,7 @@ public class Form extends JDialog {
 	 * This constructor creates a new Form which contains the FormLine objects
 	 * passed to it as a parameter.
 	 * 
-	 * @param someLines
-	 *            the FormLines to be inputed to and validated by Form.
+	 * @param someLines the FormLines to be inputed to and validated by Form.
 	 */
 	public Form(FormLine[] someLines) {
 		setResizable(false);
@@ -42,13 +40,10 @@ public class Form extends JDialog {
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new FlowLayout());
 		JButton ok = new JButton("OK"), cancel = new JButton("Cancel");
-		ActionListener formListener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (((JButton) e.getSource()).getText() == "Cancel")
-					cancelled = true;
-				done = true;
-			}
+		ActionListener formListener = (e) -> {
+			if (((JButton) e.getSource()).getText() == "Cancel")
+				cancelled = true;
+			done = true;
 		};
 		ok.addActionListener(formListener);
 		cancel.addActionListener(formListener);
@@ -60,8 +55,8 @@ public class Form extends JDialog {
 	}
 
 	/**
-	 * This method recursively clears the text fields of all the FormLines, when
-	 * the form is done accepting user input.
+	 * This method recursively clears the text fields of all the FormLines, when the
+	 * form is done accepting user input.
 	 */
 	public void clear() {
 		for (FormLine line : lines) {
@@ -73,9 +68,9 @@ public class Form extends JDialog {
 	 * This method initializes the textfields of the contained FormLines using
 	 * initializationVector.
 	 * 
-	 * @param initializationVector
-	 *            the String array which represents the Strings to be inserted
-	 *            in the text fields of the contained FormLine objects.
+	 * @param initializationVector the String array which represents the Strings to
+	 *                             be inserted in the text fields of the contained
+	 *                             FormLine objects.
 	 * @return this Form object, purely for coding convenience.
 	 */
 	public Form initialize(String[] initializationVector) {
@@ -86,13 +81,11 @@ public class Form extends JDialog {
 	}
 
 	/**
-	 * This method performs recursive input validation on all the FormLine
-	 * objects and only returns once they're all valid, and the user just
-	 * pressed "OK."
+	 * This method performs recursive input validation on all the FormLine objects
+	 * and only returns once they're all valid, and the user just pressed "OK."
 	 * 
 	 * @return a String array represented validated user input.
-	 * @throws CancelException
-	 *             when the user presses "Cancel."
+	 * @throws CancelException when the user presses "Cancel."
 	 */
 	public String[] result() throws CancelException {
 		setVisible(true);
@@ -136,15 +129,12 @@ public class Form extends JDialog {
 
 	public static final void request(FormRequest request) {
 		if (runningThread == null || !runningThread.isAlive()) {
-			runningThread = new Thread() {
-				@Override
-				public void run() {
-					try {
-						request.run();
-					} catch (Exception e) {
-					}
+			runningThread = new Thread(() -> {
+				try {
+					request.run();
+				} catch (Exception e) {
 				}
-			};
+			});
 			runningThread.start();
 		} else {
 			JOptionPane.showMessageDialog(null, "Please finish the form you're currently using.");

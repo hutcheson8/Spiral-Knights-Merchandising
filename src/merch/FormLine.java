@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.Predicate;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -23,27 +24,27 @@ import javax.swing.JTextField;
  * @version 1.0
  * @since 1.0
  */
-public abstract class FormLine extends JPanel {
+public class FormLine extends JPanel {
 	private static final long serialVersionUID = 4170647341575661801L;
 	private String help;
 	private JTextField input;
 	private JPanel notifySpot, wrong, right;
+	private final Predicate<String> predicate;
 
 	/**
 	 * This constructor creates a new FormLine object based on the name and help
-	 * String passed to it as arguments. It will create a JPanel and fill it
-	 * with a custom-drawn JPanel for feedback, a JLabel, a JTextField, and a
-	 * JButton for help.
+	 * String passed to it as arguments. It will create a JPanel and fill it with a
+	 * custom-drawn JPanel for feedback, a JLabel, a JTextField, and a JButton for
+	 * help.
 	 * 
-	 * @param name
-	 *            the name of the input field.
-	 * @param help
-	 *            the help string which appears in a dialog when the help button
-	 *            is pressed.
+	 * @param name the name of the input field.
+	 * @param help the help string which appears in a dialog when the help button is
+	 *             pressed.
 	 */
-	public FormLine(String name, String help) {
+	public FormLine(String name, String help, Predicate<String> predicate) {
 		super();
 		this.help = help;
+		this.predicate = predicate;
 		setLayout(new FlowLayout());
 		notifySpot = new JPanel() {
 			private static final long serialVersionUID = -5602302297053566788L;
@@ -104,9 +105,8 @@ public abstract class FormLine extends JPanel {
 	}
 
 	/**
-	 * This method clears the user feedback area of the check and X marks and
-	 * also resets the text to empty when the FormLine is done receiving user
-	 * input.
+	 * This method clears the user feedback area of the check and X marks and also
+	 * resets the text to empty when the FormLine is done receiving user input.
 	 */
 	public void clear() {
 		notifySpot.removeAll();
@@ -121,20 +121,19 @@ public abstract class FormLine extends JPanel {
 	}
 
 	/**
-	 * This method initializes the text field to the initializationString passed
-	 * to it as a parameter. This method is used when a form is used to update
-	 * an existed object.
+	 * This method initializes the text field to the initializationString passed to
+	 * it as a parameter. This method is used when a form is used to update an
+	 * existed object.
 	 * 
-	 * @param initializationString
-	 *            the string to initialize the text field.
+	 * @param initializationString the string to initialize the text field.
 	 */
 	public void initialize(String initializationString) {
 		input.setText(initializationString);
 	}
 
 	/**
-	 * This method tests to see if the user input is valid, and also shows
-	 * feedback to the user if it is or isn't.
+	 * This method tests to see if the user input is valid, and also shows feedback
+	 * to the user if it is or isn't.
 	 * 
 	 * @return true if the input is valid, false otherwise.
 	 */
@@ -154,11 +153,12 @@ public abstract class FormLine extends JPanel {
 	}
 
 	/**
-	 * This abstract method, to be implemented on a case by case basis via
-	 * anonymous implementation, returns true if the input is valid and false if
-	 * it isn't.
+	 * This abstract method, to be implemented on a case by case basis via anonymous
+	 * implementation, returns true if the input is valid and false if it isn't.
 	 * 
 	 * @return true, if the input is valid and false if it isn't.
 	 */
-	protected abstract boolean verify();
+	protected final boolean verify() {
+		return this.predicate.test(input.getText());
+	}
 }
