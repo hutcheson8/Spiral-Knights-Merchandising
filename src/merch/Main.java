@@ -507,7 +507,7 @@ public class Main implements Serializable {
 			});
 		});
 		bottomPanel.add(newItem);
-		JLabel lastUpdate = new JLabel("Last Update: " + items.get(0).lastUpdate());
+		JLabel lastUpdate = new JLabel("Last Update: " + items.get(0).lastUpdate() +" ("+(((new Date()).getTime() - items.get(0).lastUpdate().getTime())/3600000)+" hours ago)");
 		JButton startDaily = new JButton("Start Daily");
 		startDaily.addActionListener((e) -> {
 			constructDaily(() -> {
