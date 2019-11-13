@@ -83,7 +83,7 @@ public class Item implements Serializable {
 
 	public final int getNetProfitSince(Date date) {
 		if (date == null)
-			return mostRecentRecord().getNetProfit();
+			return mostRecentRecord() == null ? 0 : mostRecentRecord().getNetProfit();
 		int cumulate = 0;
 		for (Record r : records)
 			if (r.getTimestamp().after(date))
