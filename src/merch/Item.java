@@ -151,4 +151,8 @@ public class Item implements Serializable {
 	public final Date lastUpdate() {
 		return mostRecentRecord().getTimestamp();
 	}
+
+	public Object getCost() {
+		return mostRecentRecord().getCost();
+	}
 }

@@ -57,11 +57,106 @@ public class Main implements Serializable {
 	private final class History extends JFrame {
 		private static final long serialVersionUID = 55356975967430018L;
 
-		private final TableModel historyModel;
+		private final TableModel historyModel = new AbstractTableModel() {
+			private static final long serialVersionUID = -160380739584172259L;
 
-		public History(String string, TableModel historyModel) {
-			super(string);
-			this.historyModel = historyModel;
+			@Override
+			public int getColumnCount() {
+				return 9;
+			}
+
+			@Override
+			public int getRowCount() {
+				return items.size() + 2;
+			}
+
+			@Override
+			public Object getValueAt(int row, int column) {
+				if (row == 0)
+					switch (column) {
+					case 0:
+						return "Name";
+					case 1:
+						return "Net Profit to Date";
+					case 2:
+						return "Net Profit One Week";
+					case 3:
+						return "Net Profit Today";
+					case 4:
+						return "# of Listings";
+					case 5:
+						return "Cost";
+					case 6:
+						return "Price";
+					case 7:
+						return "Cost Plus %";
+					case 8:
+						return "Undercut Margin";
+					}
+				if (row == getRowCount() - 1) {
+					int sum = 0;
+					switch (column) {
+					case 0:
+						return "Total";
+					case 1:
+						for (Item i : items) {
+							sum += i.getNetProfitToDate();
+						}
+						break;
+					case 2:
+						for (Item i : items) {
+							sum += i.getNetProfitSince(
+									Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
+						}
+						break;
+					case 3:
+						for (Item i : items) {
+							sum += i.getNetProfitSince(null);
+						}
+						break;
+					case 4:
+						for (Item i : items) {
+							sum += i.getCurrentListings();
+						}
+						break;
+					case 5:
+						return "N/A";
+					case 6:
+						return "N/A";
+					case 7:
+						return "N/A";
+					case 8:
+						return "N/A";
+					}
+					return sum;
+				}
+				Item i = items.get(row - 1);
+				switch (column) {
+				case 0:
+					return i.getName();
+				case 1:
+					return i.getNetProfitToDate();
+				case 2:
+					return i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
+				case 3:
+					return i.getNetProfitSince(null);
+				case 4:
+					return i.getCurrentListings();
+				case 5:
+					return i.getCost();
+				case 6:
+					return i.getCurrentPrice();
+				case 7:
+					return i.getCurrentCostPlusPercent();
+				case 8:
+					return i.getCurrentUndercutMargin();
+				}
+				return null;
+			}
+		};
+
+		public History() {
+			super("History");
 		}
 
 		private final void removeTable() {
@@ -173,8 +268,7 @@ public class Main implements Serializable {
 	private final void constructSellPrompt() {
 		JFrame sellPrompt = new JFrame("Sell");
 		sellPrompt.setLayout(new GridLayout(0, 3));
-		JLabel name = new JLabel("Name"), numItems = new JLabel("# Items"),
-				price = new JLabel("Price");
+		JLabel name = new JLabel("Name"), numItems = new JLabel("# Items"), price = new JLabel("Price");
 		sellPrompt.add(name);
 		sellPrompt.add(numItems);
 		sellPrompt.add(price);
@@ -359,97 +453,7 @@ public class Main implements Serializable {
 	private final void run() {
 		new JFXPanel();
 		JFrame reminder = new JFrame("Reminder");
-		History history = new History("History", new AbstractTableModel() {
-			private static final long serialVersionUID = -160380739584172259L;
-
-			@Override
-			public int getColumnCount() {
-				return 8;
-			}
-
-			@Override
-			public int getRowCount() {
-				return items.size() + 2;
-			}
-
-			@Override
-			public Object getValueAt(int row, int column) {
-				if (row == 0)
-					switch (column) {
-					case 0:
-						return "Name";
-					case 1:
-						return "Net Profit to Date";
-					case 2:
-						return "Net Profit One Week";
-					case 3:
-						return "Net Profit Today";
-					case 4:
-						return "# of Listings";
-					case 5:
-						return "Price";
-					case 6:
-						return "Cost Plus %";
-					case 7:
-						return "Undercut Margin";
-					}
-				if (row == getRowCount() - 1) {
-					int sum = 0;
-					switch (column) {
-					case 0:
-						return "Total";
-					case 1:
-						for (Item i : items) {
-							sum += i.getNetProfitToDate();
-						}
-						break;
-					case 2:
-						for (Item i : items) {
-							sum += i.getNetProfitSince(
-									Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
-						}
-						break;
-					case 3:
-						for (Item i : items) {
-							sum += i.getNetProfitSince(null);
-						}
-						break;
-					case 4:
-						for (Item i : items) {
-							sum += i.getCurrentListings();
-						}
-						break;
-					case 5:
-						return "N/A";
-					case 6:
-						return "N/A";
-					case 7:
-						return "N/A";
-					}
-					return sum;
-				}
-				Item i = items.get(row - 1);
-				switch (column) {
-				case 0:
-					return i.getName();
-				case 1:
-					return i.getNetProfitToDate();
-				case 2:
-					return i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
-				case 3:
-					return i.getNetProfitSince(null);
-				case 4:
-					return i.getCurrentListings();
-				case 5:
-					return i.getCurrentPrice();
-				case 6:
-					return i.getCurrentCostPlusPercent();
-				case 7:
-					return i.getCurrentUndercutMargin();
-				}
-				return null;
-			}
-		});
+		History history = new History();
 		// Setup Window for small reminder
 		reminder.setLayout(new FlowLayout());
 		reminder.add(new JLabel("Feed pet and complete prestige mission."));

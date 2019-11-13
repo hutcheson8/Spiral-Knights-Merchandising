@@ -116,6 +116,10 @@ public final class Record implements Serializable {
 		return price;
 	}
 
+	public final int getCost() {
+		return cost;
+	}
+
 	public final float getUndercutMargin() {
 		return undercutMargin;
 	}
