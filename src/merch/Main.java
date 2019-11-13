@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,6 +37,11 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 
 public class Main implements Serializable {
+
+	private final ArrayList<Item> items = new ArrayList<Item>();
+	private final Supplier<String> lastUpdateText = () -> "Last Update: " + items.get(0).lastUpdate() + " ("
+			+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000) + " hours ago)";
+
 	private final class FloatHolder {
 		float f;
 
@@ -108,8 +114,6 @@ public class Main implements Serializable {
 	private static final long serialVersionUID = -7878541532400694122L;
 
 	private Float energyPrice;
-
-	private final ArrayList<Item> items = new ArrayList<Item>();
 
 	private final void constructDaily(Runnable update) {
 		JFrame daily = new JFrame("Daily");
@@ -507,12 +511,12 @@ public class Main implements Serializable {
 			});
 		});
 		bottomPanel.add(newItem);
-		JLabel lastUpdate = new JLabel("Last Update: " + items.get(0).lastUpdate() +" ("+(((new Date()).getTime() - items.get(0).lastUpdate().getTime())/3600000)+" hours ago)");
+		JLabel lastUpdate = new JLabel(lastUpdateText.get());
 		JButton startDaily = new JButton("Start Daily");
 		startDaily.addActionListener((e) -> {
 			constructDaily(() -> {
 				history.update();
-				lastUpdate.setText("Last Update: " + items.get(0).lastUpdate());
+				lastUpdate.setText(lastUpdateText.get());
 			});
 		});
 		bottomPanel.add(startDaily);
