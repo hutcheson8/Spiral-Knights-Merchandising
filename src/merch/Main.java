@@ -310,15 +310,21 @@ public class Main implements Serializable {
 	}
 
 	private final void finish() {
-		try {
-			ObjectOutputStream savingStream = new ObjectOutputStream(
-					new BufferedOutputStream(new FileOutputStream("data.srl")));
-			savingStream.writeObject(this);
-			savingStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		switch (JOptionPane.showConfirmDialog(null, "Save Your Work?")) {
+		case 0:
+			try {
+				ObjectOutputStream savingStream = new ObjectOutputStream(
+						new BufferedOutputStream(new FileOutputStream("data.srl")));
+				savingStream.writeObject(this);
+				savingStream.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		case 1:
+			System.exit(0);
+			break;
+		default:
 		}
-		System.exit(0);
 	}
 
 	private final void record(JTextField[] data) throws Exception {
@@ -509,7 +515,7 @@ public class Main implements Serializable {
 		bottomPanel.add(lastUpdate);
 		history.add(bottomPanel, BorderLayout.SOUTH);
 		history.update();
-		history.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		history.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		history.addWindowListener(new WindowListener() {
 			@Override
 			public void windowActivated(WindowEvent arg0) {
