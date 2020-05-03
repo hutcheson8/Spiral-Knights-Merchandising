@@ -45,7 +45,7 @@ public final class Record implements Serializable {
 			loss = lotsExpired * expiredListingPrice;
 			int previousMaxListings = previous.getMaxListings();
 			if (lotsExpired > 0) {// Expired
-				previousMaxListings -= lotsExpired;
+				previousMaxListings = previous.getFinalListings() - lotsExpired;
 				if (previousMaxListings == 0)
 					previousMaxListings = 1;
 				if (justExpired != null && justExpired.getUndercut() != 0) {
