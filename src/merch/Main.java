@@ -16,8 +16,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -140,7 +142,7 @@ public class Main implements Serializable {
 				case 4:
 					return i.getCurrentListings();
 				case 5:
-					return i.getCost();
+					return (Object) i.getCost();//KNIVES Test if this cast is required
 				case 6:
 					return i.getCurrentPrice();
 				case 7:
@@ -200,9 +202,10 @@ public class Main implements Serializable {
 		}
 	};
 	/**
-	 * { "Expired Items", "Leftovers", "AH Price", "AH Items/Listing" }
+	 * { "Expired Items", "Leftover Items", "Active Listings", "AH Price", "AH Items/Listing" }
 	 */
-	private final static String[] DAILY_COLUMNS = { "Expired Items", "Leftovers", "AH Price", "AH Items/Listing" };
+	private final static String[] DAILY_COLUMNS
+			= {"Expired Items", "Leftover Items", "Active Listings", "AH Price", "AH Items/Listing"};
 	private static final long serialVersionUID = -7878541532400694122L;
 
 	private Float energyPrice;
@@ -210,7 +213,7 @@ public class Main implements Serializable {
 	private final void constructDaily(Runnable update) {
 		JFrame daily = new JFrame("Daily");
 		daily.setLayout(new GridLayout(items.size() + 2, DAILY_COLUMNS.length + 1));
-		JTextField[] textFields = new JTextField[items.size() * DAILY_COLUMNS.length + 1];
+		JTextField[] textFields = new JTextField[items.size() * DAILY_COLUMNS.length + 2];
 		daily.add(new JLabel("Name"));
 		for (int x = 0; x < DAILY_COLUMNS.length; x++) {
 			daily.add(new JLabel(DAILY_COLUMNS[x]));
@@ -228,9 +231,13 @@ public class Main implements Serializable {
 		JLabel energyPriceLabel = new JLabel("Energy Price: ");
 		daily.add(energyPriceLabel);
 		JTextField energyPrice = new JTextField();
-		textFields[textFields.length - 1] = energyPrice;
+		textFields[textFields.length - 2] = energyPrice;
 		daily.add(energyPrice);
-		daily.add(new JPanel());
+		JLabel energyReservesLabel = new JLabel("Energy Reserves: ");
+		daily.add(energyReservesLabel);
+		JTextField energyReserves = new JTextField();
+		textFields[textFields.length - 1] = energyReserves;
+		daily.add(energyReserves);
 		JButton submit = new JButton("Submit");
 		submit.addActionListener((e) -> {
 			try {
@@ -252,9 +259,9 @@ public class Main implements Serializable {
 		JButton cancel = new JButton("Cancel");
 		cancel.addActionListener((e) -> daily.setVisible(false));
 		daily.add(cancel);
-		for (int x = 0; x < DAILY_COLUMNS.length - 4; x++) {
-			daily.add(new JPanel());
-		}
+		// for (int x = 0; x < DAILY_COLUMNS.length - ?; x++) {
+		// daily.add(new JPanel());
+		// }
 		daily.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		daily.pack();
 		daily.setLocationRelativeTo(null);
@@ -269,12 +276,12 @@ public class Main implements Serializable {
 		sellPrompt.add(name);
 		sellPrompt.add(numItems);
 		sellPrompt.add(price);
-		for (Item i : items) {
-			if (i.isCurrentlyStocked() && i.getNumToSell() > 0) {
-				JLabel aName = new JLabel(i.getName());
+		for (Item item : items) {
+			if (item.isCurrentlyStocked() && item.getNumListingsToSell() > 0) {
+				JLabel aName = new JLabel(item.getName());
 				aName.addMouseListener(COPIER);
-				JLabel someItems = new JLabel(i.getNumToSell() * i.getQuantityPerListing() + "");
-				JLabel aPrice = new JLabel(i.getCurrentPrice() + "");
+				JLabel someItems = new JLabel(item.getNumListingsToSell() * item.getQuantityPerListing() + "");
+				JLabel aPrice = new JLabel(item.getCurrentPrice() + "");
 				aPrice.addMouseListener(COPIER);
 				sellPrompt.add(aName);
 				sellPrompt.add(someItems);
@@ -424,27 +431,39 @@ public class Main implements Serializable {
 	}
 
 	private final void record(JTextField[] data) throws Exception {
-		energyPrice = ((float) Integer.parseInt(data[data.length - 1].getText())) / 100;
+		energyPrice = ((float) Integer.parseInt(data[data.length - 2].getText())) / 100;
+		int energyReserves = Integer.parseInt(data[data.length - 1].getText());
+		List<RecordParams> recordParamsList = new ArrayList<>(items.size());
 		Date timeStamp = new Date();
-		int[] expiredItems = new int[items.size()];
-		int[] leftovers = new int[items.size()];
-		int[] aHPrice = new int[items.size()];
-		for (int x = 0; x < items.size(); x++) {
-			// Throwing potential exceptions at once to avoid partial record creation.
-			int aHItems;
-			Item i = items.get(x);
-			expiredItems[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText());
-			leftovers[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText());
-			aHItems = Integer.parseInt(data[x * DAILY_COLUMNS.length + 3].getText());
-			aHPrice[x] = Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()) / aHItems;
-			if (aHPrice[x] == 0)
-				aHPrice[x] = (int) (i.getMostRecentAHPrice(energyPrice) * 1.01);
-			if (aHPrice[x] * i.getQuantityPerListing() < i.getSDCRCostPerListing(energyPrice))
-				throw new GoodDealException(i, aHPrice[x], energyPrice);
+		for(int x = 0; x < items.size(); x++) {// Throwing potential exceptions at once to avoid partial record creation.
+			Item item = items.get(x);
+			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 3].getText()) / Integer.parseInt(data[x * DAILY_COLUMNS.length + 4].getText());
+			if (aHPrice == 0)
+				aHPrice = (int) (item.getMostRecentAHPrice(energyPrice) * 1.01);
+			if (aHPrice * item.getQuantityPerListing() < item.getSDCRCostPerListing(energyPrice))
+				throw new GoodDealException(item, aHPrice, energyPrice);
+			recordParamsList.add(new RecordParams(
+					item,
+					Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText()),
+					Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText()),
+					Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()),
+					aHPrice));
 		}
-		for (int x = 0; x < items.size(); x++) {// Now that input definitely works, create all records at once.
-			items.get(x).addRecord(expiredItems[x], leftovers[x], aHPrice[x], energyPrice, timeStamp);
+		recordParamsList.stream().forEach((recordParams)->{
+			recordParams.addRecord(energyPrice, timeStamp);
+		});
+		List<RankableParams> rankableParamsList = new ArrayList<>(items.size() * 2);
+		recordParamsList.forEach((recordParams)->{
+			rankableParamsList.add(new RankableParams(false, recordParams));
+			rankableParamsList.add(new RankableParams(true, recordParams));
+		});
+		rankableParamsList.sort(Collections.reverseOrder());
+		for(RankableParams rankableParams : rankableParamsList){
+			energyReserves = rankableParams.authorizeSDPurchases(energyReserves);
 		}
+		recordParamsList.stream().forEach((recordParams)->{
+			recordParams.propogateNumListingsToSell();
+		});
 	}
 
 	private final String lastUpdateText() {

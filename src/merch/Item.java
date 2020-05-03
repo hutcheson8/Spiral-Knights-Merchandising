@@ -29,6 +29,15 @@ public class Item implements Serializable {
 					}) });
 	private static final long serialVersionUID = 402088475468107547L;
 	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel;
+
+	public void setNumListingsToSell(int numListingsToSell){
+		mostRecentRecord().setNumListingsToSell(numListingsToSell);
+	}
+
+	public int getEnergyPerSDPurchase(){ return energyPerSDPurchase; }
+
+	public int getQuantityPerSDPurchase(){ return quantityPerSDPurchase; }
+
 	private final String name;
 	private ArrayList<Record> records = new ArrayList<Record>();
 
@@ -41,8 +50,24 @@ public class Item implements Serializable {
 		starLevel = Integer.parseInt(result[4]);
 	}
 
-	public final void addRecord(int expiredItems, int leftovers, int aHPrice, Float energyPrice, Date timeStamp) {
-		records.add(new Record(expiredItems, leftovers, aHPrice, energyPrice, timeStamp, mostRecentRecord(), this));
+	public int getProfittingFromItemQuantity(boolean lastSDPurchase){
+		// Test if these parentheses are required.
+		return lastSDPurchase
+				? (getNumListingsToSell() * getQuantityPerListing()) % getQuantityPerSDPurchase()
+				: getQuantityPerSDPurchase();
+	}
+
+	public final int getProfitPerEnergySpent(boolean lastSDPurchase){
+		int profittingFromItemQuantity = getProfittingFromItemQuantity(lastSDPurchase);
+		return (int) ((getCurrentPrice() * 9f / 10 - getCost())
+				/ quantityPerListing
+				* profittingFromItemQuantity
+				/ energyPerSDPurchase);
+	}
+
+	public final void addRecord(int expiredItems, int numActiveListings, int aHPrice, Float energyPrice, Date timeStamp){
+		records.add(
+				new Record(expiredItems, numActiveListings, aHPrice, energyPrice, timeStamp, mostRecentRecord(), this));
 	}
 
 	public final float getCurrentCostPlusPercent() {
@@ -52,7 +77,7 @@ public class Item implements Serializable {
 
 	public final int getCurrentListings() {
 		Record recent = mostRecentRecord();
-		return recent == null ? 0 : recent.getNumListings();
+		return recent == null ? 0 : recent.getMaxListings();
 	}
 
 	public final int getCurrentPrice() {
@@ -91,8 +116,8 @@ public class Item implements Serializable {
 		return cumulate;
 	}
 
-	public final int getNumToSell() {
-		return mostRecentRecord().getNumToSell();
+	public final int getNumListingsToSell() {
+		return mostRecentRecord().getNumListingsToSell();
 	}
 
 	public final int getQuantityPerListing() {
@@ -152,7 +177,7 @@ public class Item implements Serializable {
 		return mostRecentRecord().getTimestamp();
 	}
 
-	public Object getCost() {
+	public int getCost() {
 		return mostRecentRecord().getCost();
 	}
 }
