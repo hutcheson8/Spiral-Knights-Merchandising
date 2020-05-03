@@ -31,7 +31,7 @@ public final class Record implements Serializable {
 			lotsSold = 0;
 			profit = 0;
 			loss = 0;
-			maxListings = 5;// Reasonable default value
+			maxListings = recordItem.getStartingListings();
 			costPlusPercent = 1f;
 			undercutMargin = .75f;
 		} else {

@@ -26,9 +26,10 @@ public class Item implements Serializable {
 						} catch (Exception e) {
 							return false;
 						}
-					}) });
+					}),
+					new FormLine("Starting Listings", POSINT, POSINTPRD)});
 	private static final long serialVersionUID = 402088475468107547L;
-	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel;
+	private final int energyPerSDPurchase, quantityPerSDPurchase, quantityPerListing, starLevel, startingListings;
 
 	public void setNumListingsToSell(int numListingsToSell){
 		mostRecentRecord().setNumListingsToSell(numListingsToSell);
@@ -48,6 +49,7 @@ public class Item implements Serializable {
 		quantityPerSDPurchase = Integer.parseInt(result[2]);
 		quantityPerListing = Integer.parseInt(result[3]);
 		starLevel = Integer.parseInt(result[4]);
+		startingListings = Integer.parseInt(result[5]);
 	}
 
 	public int getProfittingFromItemQuantity(boolean lastSDPurchase){
@@ -161,6 +163,10 @@ public class Item implements Serializable {
 			break;
 		}
 		return (int) (basePrice * quantityPerListing * 2 + .5f);
+	}
+
+	public final int getStartingListings() {
+		return startingListings;
 	}
 
 	public final boolean isCurrentlyStocked() {
