@@ -466,9 +466,15 @@ public class Main implements Serializable {
 		});
 	}
 
-	private final String lastUpdateText() {
-		return "Last Update: " + items.get(0).lastUpdate() + " ("
-				+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000) + " hours ago)";
+	private final String lastUpdateText(){
+		if(items.isEmpty())
+			return "First Run";
+		else
+			return "Last Update: "
+					+ items.get(0).lastUpdate()
+					+ " ("
+					+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000)
+					+ " hours ago)";
 	}
 
 	private final void run() {

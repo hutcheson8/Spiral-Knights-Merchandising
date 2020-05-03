@@ -174,7 +174,7 @@ public class Item implements Serializable {
 	}
 
 	private final Record mostRecentRecord() {
-		if (records.size() == 0)
+		if (records.isEmpty())
 			return null;
 		return records.get(records.size() - 1);
 	}
@@ -183,7 +183,8 @@ public class Item implements Serializable {
 		return mostRecentRecord().getTimestamp();
 	}
 
-	public int getCost() {
-		return mostRecentRecord().getCost();
+	public int getCost(){
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getCost();
 	}
 }

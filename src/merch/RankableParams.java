@@ -26,9 +26,13 @@ public class RankableParams implements Comparable<RankableParams> {// KNIVES Con
 		int numPurchasesToMake = Math.min(energyReserves / getEnergyPerSDPurchase(), maxSDPurchases);
 		int itemStock = getLeftoverItems() + numPurchasesToMake * getQuantityPerSDPurchase();
 		energyReserves -= numPurchasesToMake * getEnergyPerSDPurchase();
-		setNumListingsToSell(lastSDPurchase && numPurchasesToMake == 1
-				? maxListingsToSell
-				: Math.min(itemStock / getQuantityPerListing(), maxListingsToSell));
+		if(lastSDPurchase){
+			if(numPurchasesToMake == 1){
+				setNumListingsToSell(maxListingsToSell);
+			}
+		}else{
+			setNumListingsToSell(Math.min(itemStock / getQuantityPerListing(), maxListingsToSell));
+		}
 		return energyReserves;
 	}
 
