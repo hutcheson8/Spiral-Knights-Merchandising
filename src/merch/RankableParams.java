@@ -22,15 +22,11 @@ public class RankableParams implements Comparable<RankableParams> {// KNIVES Con
 			maxSDPurchases = 0;
 		}
 		profitPerEnergySpent
-				= (int) ((getProfitPerListing())
+				= (getProfitPerListing())
 						/ getNumItemsPerListing()
 						* numItemsSoldFromSDPurchase
-						/ getEnergyPerSDPurchase());
+						/ getEnergyPerSDPurchase();
 	}
-
-	private int getProfitPerListing(){ return recordParams.getProfitPerListing(); }
-
-	private int getInitialNumListingsToSell(){ return recordParams.getInitialNumListingsToSell(); }
 
 	public int authorizeSDPurchases(int energyReserves){
 		int numPurchasesToMake = Math.min(energyReserves / getEnergyPerSDPurchase(), maxSDPurchases);
@@ -55,17 +51,21 @@ public class RankableParams implements Comparable<RankableParams> {// KNIVES Con
 		return thisProfit.compareTo(otherProfit);
 	}
 
+	public int getEnergyPerSDPurchase(){ return recordParams.getEnergyPerSDPurchase(); }
+
+	private int getInitialNumListingsToSell(){ return recordParams.getInitialNumListingsToSell(); }
+
 	private Item getItem(){ return recordParams.getItem(); }
 
-	public int getEnergyPerSDPurchase(){ return recordParams.getEnergyPerSDPurchase(); }
+	private int getNumItemsPerListing(){ return recordParams.getNumItemsPerListing(); }
+
+	private int getNumItemsPerSDPurchase(){ return recordParams.getNumItemsPerSDPurchase(); }
 
 	private int getNumLeftoverItems(){ return recordParams.getNumLeftoverItems(); }
 
 	public int getProfitPerEnergySpent(){ return profitPerEnergySpent; }
 
-	private int getNumItemsPerListing(){ return recordParams.getNumItemsPerListing(); }
-
-	private int getNumItemsPerSDPurchase(){ return recordParams.getNumItemsPerSDPurchase(); }
+	private int getProfitPerListing(){ return recordParams.getProfitPerListing(); }
 
 	public void setNumListingsToSell(int numListingsToSell){
 		recordParams.setNumListingsToSell(numListingsToSell);

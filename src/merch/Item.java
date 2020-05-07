@@ -7,42 +7,35 @@ import java.util.function.Predicate;
 
 public class Item implements Serializable {
 	private final static String POSINT = "Please enter a positive integer.";
-	private final static Predicate<String> POSINTPRD = (input) -> {
-		try {
+	private final static Predicate<String> POSINTPRD = (input)->{
+		try{
 			return Integer.parseInt(input) > 0;
-		} catch (Exception e) {
+		}catch(Exception e){
 			return false;
 		}
 	};
-	private static final Form FORM = new Form(
-			new FormLine[] { new FormLine("Name", "Please enter a name for the item.", (input) -> {
+	private static final Form FORM
+			= new Form(new FormLine[]{new FormLine("Name", "Please enter a name for the item.", (input)->{
 				return input.length() > 0;
-			}), new FormLine("Energy Price", POSINT, POSINTPRD), new FormLine("Items Per SDPurchase", POSINT, POSINTPRD),
+			}),
+					new FormLine("Energy Price", POSINT, POSINTPRD),
+					new FormLine("Items Per SDPurchase", POSINT, POSINTPRD),
 					new FormLine("Items Per Listing", POSINT, POSINTPRD),
-					new FormLine("Star Level", "Please enter a number between 0 and 5. (inclusive)", (input) -> {
-						try {
+					new FormLine("Star Level", "Please enter a number between 0 and 5. (inclusive)", (input)->{
+						try{
 							int numInput = Integer.parseInt(input);
 							return 0 <= numInput && numInput <= 5;
-						} catch (Exception e) {
+						}catch(Exception e){
 							return false;
 						}
 					}),
 					new FormLine("Starting Listings", POSINT, POSINTPRD)});
 	private static final long serialVersionUID = 402088475468107547L;
 	private final int energyPerSDPurchase, numItemsPerSDPurchase, numItemsPerListing, starLevel, numStartingListings;
-
-	public void setNumListingsToSell(int numListingsToSell){
-		mostRecentRecord().setNumListingsToSell(numListingsToSell);
-	}
-
-	public int getEnergyPerSDPurchase(){ return energyPerSDPurchase; }
-
-	public int getNumItemsPerSDPurchase(){ return numItemsPerSDPurchase; }
-
 	private final String name;
 	private ArrayList<Record> records = new ArrayList<Record>();
 
-	public Item() throws CancelException {
+	public Item() throws CancelException{
 		String[] result = FORM.result();
 		name = result[0];
 		energyPerSDPurchase = Integer.parseInt(result[1]);
@@ -52,82 +45,84 @@ public class Item implements Serializable {
 		numStartingListings = Integer.parseInt(result[5]);
 	}
 
-	public final void addRecord(int expiredItems, int numActiveListings, int aHPrice, Float energyPrice, Date timeStamp){
+	public final
+			void
+			addRecord(int expiredItems, int numActiveListings, int aHPrice, Float energyPrice, Date timeStamp){
 		records.add(
 				new Record(expiredItems, numActiveListings, aHPrice, energyPrice, timeStamp, mostRecentRecord(), this));
 	}
 
-	public final float getCostPlusPercent() {
-		Record recent = mostRecentRecord();
-		return recent == null ? 0 : recent.getCostPlusPercent();
-	}
-
-	public final int getMaxListings() {
-		Record recent = mostRecentRecord();
-		return recent == null ? 0 : recent.getMaxListings();
-	}
-
-	public final int getPrice() {
-		Record recent = mostRecentRecord();
-		return recent == null ? 0 : recent.getPrice();
-	}
-
-	public final float getUndercutMargin() {
-		Record recent = mostRecentRecord();
-		return recent == null ? 0 : recent.getUndercutMargin();
-	}
-
-	public int getAHPrice(float energyPrice) {
+	public int getAHPrice(float energyPrice){
 		Record recent = mostRecentRecord();
 		return recent == null ? getSDCRCostPerListing(energyPrice) * 2 : recent.getAHPrice();
 	}
 
-	public final String getName() {
-		return name;
+	public int getCost(){
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getCost();
 	}
 
-	public final int getNetProfitToDate() {
+	public final float getCostPlusPercent(){
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getCostPlusPercent();
+	}
+
+	public int getEnergyPerSDPurchase(){ return energyPerSDPurchase; }
+
+	public final int getMaxListings(){
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getMaxListings();
+	}
+
+	public final String getName(){ return name; }
+
+	public final int getNetProfitSince(Date date){
+		if(date == null) return mostRecentRecord() == null ? 0 : mostRecentRecord().getNetProfit();
 		int cumulate = 0;
-		for (Record r : records)
-			cumulate += r.getNetProfit();
+		for(Record r : records) if(r.getTimestamp().after(date)) cumulate += r.getNetProfit();
 		return cumulate;
 	}
 
-	public final int getNetProfitSince(Date date) {
-		if (date == null)
-			return mostRecentRecord() == null ? 0 : mostRecentRecord().getNetProfit();
+	public final int getNetProfitToDate(){
 		int cumulate = 0;
-		for (Record r : records)
-			if (r.getTimestamp().after(date))
-				cumulate += r.getNetProfit();
+		for(Record r : records) cumulate += r.getNetProfit();
 		return cumulate;
 	}
 
-	public final int getNumListingsToSell() {
-		return mostRecentRecord().getNumListingsToSell();
+	public final int getNumItemsPerListing(){ return numItemsPerListing; }
+
+	public int getNumItemsPerSDPurchase(){ return numItemsPerSDPurchase; }
+
+	public final int getNumListingsToSell(){ return mostRecentRecord().getNumListingsToSell(); }
+
+	public final int getNumStartingListings(){ return numStartingListings; }
+
+	public final int getPrice(){
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getPrice();
 	}
 
-	public final int getNumItemsPerListing() {
-		return numItemsPerListing;
-	}
+	public int getProfitPerListing(){ return mostRecentRecord().getProfitPerListing(); }
 
-	public final int getRequiredCrownReserves() {
+	public final int getRequiredCrownReserves(){
 		return (getMaxListings() + mostRecentRecord().getNumListingsNotStocked())
 				* mostRecentRecord().getListingPrice();
 	}
 
-	public final int getRequiredEnergyReserves() {
-		return (getMaxListings() + mostRecentRecord().getNumListingsNotStocked()) * numItemsPerListing
-				* energyPerSDPurchase / numItemsPerSDPurchase;
+	public final int getRequiredEnergyReserves(){
+		return (getMaxListings() + mostRecentRecord().getNumListingsNotStocked())
+				* numItemsPerListing
+				* energyPerSDPurchase
+				/ numItemsPerSDPurchase;
 	}
 
-	public final int getSDCRCostPerListing(float energyPrice) {
+	public final int getSDCRCostPerListing(float energyPrice){
 		return (int) (energyPerSDPurchase * energyPrice * numItemsPerListing / numItemsPerSDPurchase);
 	}
 
-	public final int getStarLevelBasedListingFee() {
+	public final int getStarLevelBasedListingFee(){
 		float basePrice = 0;
-		switch (starLevel) {
+		switch(starLevel){
 		case 0:
 			basePrice = 5;
 			break;
@@ -150,28 +145,23 @@ public class Item implements Serializable {
 		return (int) (basePrice * numItemsPerListing * 2 + .5f);
 	}
 
-	public final int getNumStartingListings() {
-		return numStartingListings;
+	public final float getUndercutMargin(){
+		Record recent = mostRecentRecord();
+		return recent == null ? 0 : recent.getUndercutMargin();
 	}
 
-	public final boolean isStocked() {
-		return mostRecentRecord().isStocked();
-	}
+	public final boolean isStocked(){ return mostRecentRecord().isStocked(); }
 
-	private final Record mostRecentRecord() {
-		if (records.isEmpty())
-			return null;
-		return records.get(records.size() - 1);
-	}
-
-	public final Date lastUpdate() {
+	public final Date lastUpdate(){
 		return mostRecentRecord().getTimestamp();
 	}
 
-	public int getCost(){
-		Record recent = mostRecentRecord();
-		return recent == null ? 0 : recent.getCost();
+	private final Record mostRecentRecord(){
+		if(records.isEmpty()) return null;
+		return records.get(records.size() - 1);
 	}
 
-	public int getProfitPerListing(){ return mostRecentRecord().getProfitPerListing(); }
+	public void setNumListingsToSell(int numListingsToSell){
+		mostRecentRecord().setNumListingsToSell(numListingsToSell);
+	}
 }

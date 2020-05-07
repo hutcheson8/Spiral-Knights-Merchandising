@@ -38,83 +38,71 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 
 public class Main implements Serializable {
-
-	private final ArrayList<Item> items = new ArrayList<Item>();
-
 	private final class FloatHolder {
 		float f;
 
-		private final float getFloat() {
-			return f;
-		}
+		private final float getFloat(){ return f; }
 
-		private final void setFloat(float f) {
-			this.f = f;
-		}
+		private final void setFloat(float f){ this.f = f; }
 	}
 
 	private final class History extends JFrame {
 		private static final long serialVersionUID = 55356975967430018L;
-
 		private final TableModel historyModel = new AbstractTableModel() {
 			private static final long serialVersionUID = -160380739584172259L;
 
 			@Override
-			public int getColumnCount() {
-				return 9;
-			}
+			public int getColumnCount(){ return 9; }
 
 			@Override
-			public int getRowCount() {
-				return items.size() + 2;
-			}
+			public int getRowCount(){ return items.size() + 2; }
 
 			@Override
-			public Object getValueAt(int row, int column) {
-				if (row == 0)
-					switch (column) {
-					case 0:
-						return "Name";
-					case 1:
-						return "Net Profit to Date";
-					case 2:
-						return "Net Profit One Week";
-					case 3:
-						return "Net Profit Today";
-					case 4:
-						return "# of Listings";
-					case 5:
-						return "Cost";
-					case 6:
-						return "Price";
-					case 7:
-						return "Cost Plus %";
-					case 8:
-						return "Undercut Margin";
-					}
-				if (row == getRowCount() - 1) {
+			public Object getValueAt(int row, int column){
+				if(row == 0) switch(column){
+				case 0:
+					return "Name";
+				case 1:
+					return "Net Profit to Date";
+				case 2:
+					return "Net Profit One Week";
+				case 3:
+					return "Net Profit Today";
+				case 4:
+					return "# of Listings";
+				case 5:
+					return "Cost";
+				case 6:
+					return "Price";
+				case 7:
+					return "Cost Plus %";
+				case 8:
+					return "Undercut Margin";
+				}
+				if(row == getRowCount() - 1){
 					int sum = 0;
-					switch (column) {
+					switch(column){
 					case 0:
 						return "Total";
 					case 1:
-						for (Item i : items) {
+						for(Item i : items){
 							sum += i.getNetProfitToDate();
 						}
 						break;
 					case 2:
-						for (Item i : items) {
-							sum += i.getNetProfitSince(
-									Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
+						for(Item i : items){
+							sum
+									+= i.getNetProfitSince(
+											Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
 						}
 						break;
 					case 3:
-						for (Item i : items) {
+						for(Item i : items){
 							sum += i.getNetProfitSince(null);
 						}
 						break;
 					case 4:
-						for (Item i : items) {
+						for(Item i : items){
 							sum += i.getMaxListings();
 						}
 						break;
@@ -130,7 +118,7 @@ public class Main implements Serializable {
 					return sum;
 				}
 				Item i = items.get(row - 1);
-				switch (column) {
+				switch(column){
 				case 0:
 					return i.getName();
 				case 1:
@@ -142,7 +130,7 @@ public class Main implements Serializable {
 				case 4:
 					return i.getMaxListings();
 				case 5:
-					return (Object) i.getCost();//KNIVES Test if this cast is required
+					return i.getCost();// KNIVES Test if this cast is required
 				case 6:
 					return i.getPrice();
 				case 7:
@@ -154,19 +142,18 @@ public class Main implements Serializable {
 			}
 		};
 
-		public History() {
+		public History(){
 			super("History");
 		}
 
-		private final void removeTable() {
+		private final void removeTable(){
 			Component[] comps = getComponents();
-			for (Component comp : comps) {
-				if (comp instanceof JTable)
-					remove(comp);
+			for(Component comp : comps){
+				if(comp instanceof JTable) remove(comp);
 			}
 		}
 
-		private final void update() {
+		private final void update(){
 			removeTable();
 			add(new JTable(historyModel), BorderLayout.CENTER);
 			validate();
@@ -177,53 +164,68 @@ public class Main implements Serializable {
 
 	private final static MouseListener COPIER = new MouseListener() {
 		@Override
-		public void mouseClicked(MouseEvent e) {
+		public void mouseClicked(MouseEvent e){
 			HashMap<DataFormat, Object> data = new HashMap<DataFormat, Object>();
 			data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
-			Platform.runLater(() -> {
+			Platform.runLater(()->{
 				Clipboard.getSystemClipboard().setContent(data);
 			});
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent e) {
+		public void mouseEntered(MouseEvent e){
 		}
 
 		@Override
-		public void mouseExited(MouseEvent e) {
+		public void mouseExited(MouseEvent e){
 		}
 
 		@Override
-		public void mousePressed(MouseEvent e) {
+		public void mousePressed(MouseEvent e){
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent e) {
+		public void mouseReleased(MouseEvent e){
 		}
 	};
 	/**
-	 * { "Expired Items", "Leftover Items", "Active Listings", "AH Price", "AH Items/Listing" }
+	 * { "Expired Items", "Leftover Items", "Active Listings", "AH Price", "AH
+	 * Items/Listing" }
 	 */
 	private final static String[] DAILY_COLUMNS
 			= {"Expired Items", "Leftover Items", "Active Listings", "AH Price", "AH Items/Listing"};
 	private static final long serialVersionUID = -7878541532400694122L;
 
-	private Float energyPrice;
+	public static void main(String[] args){
+		Main main;
+		try{
+			ObjectInputStream loadingStream
+					= new ObjectInputStream(new BufferedInputStream(new FileInputStream("data.srl")));
+			main = (Main) loadingStream.readObject();
+			loadingStream.close();
+		}catch(Exception e){
+			main = new Main();
+		}
+		main.run();
+	}
 
-	private final void constructDaily(Runnable update) {
+	private Float energyPrice;
+	private final ArrayList<Item> items = new ArrayList<Item>();
+
+	private final void constructDaily(Runnable update){
 		JFrame daily = new JFrame("Daily");
 		daily.setLayout(new GridLayout(items.size() + 2, DAILY_COLUMNS.length + 1));
 		JTextField[] textFields = new JTextField[items.size() * DAILY_COLUMNS.length + 2];
 		daily.add(new JLabel("Name"));
-		for (int x = 0; x < DAILY_COLUMNS.length; x++) {
+		for(int x = 0; x < DAILY_COLUMNS.length; x++){
 			daily.add(new JLabel(DAILY_COLUMNS[x]));
 		}
-		for (int x = 0; x < items.size(); x++) {
+		for(int x = 0; x < items.size(); x++){
 			Item i = items.get(x);
 			JLabel itemName = new JLabel(i.getName());
 			itemName.addMouseListener(COPIER);
 			daily.add(itemName);
-			for (int y = 0; y < DAILY_COLUMNS.length; y++) {
+			for(int y = 0; y < DAILY_COLUMNS.length; y++){
 				textFields[x * DAILY_COLUMNS.length + y] = new JTextField();
 				daily.add(textFields[x * DAILY_COLUMNS.length + y]);
 			}
@@ -239,17 +241,17 @@ public class Main implements Serializable {
 		textFields[textFields.length - 1] = energyReserves;
 		daily.add(energyReserves);
 		JButton submit = new JButton("Submit");
-		submit.addActionListener((e) -> {
-			try {
+		submit.addActionListener((e)->{
+			try{
 				record(textFields);
 				update.run();
 				daily.setVisible(false);
 				constructSellPrompt();
-			} catch (Exception f) {
-				if (f instanceof GoodDealException) {
+			}catch(Exception f){
+				if(f instanceof GoodDealException){
 					GoodDealException deal = (GoodDealException) f;
 					deal.showDealMessage();
-				} else {
+				}else{
 					f.printStackTrace();
 					JOptionPane.showMessageDialog(null, "Incorrect Input!");
 				}
@@ -257,7 +259,7 @@ public class Main implements Serializable {
 		});
 		daily.add(submit);
 		JButton cancel = new JButton("Cancel");
-		cancel.addActionListener((e) -> daily.setVisible(false));
+		cancel.addActionListener((e)->daily.setVisible(false));
 		daily.add(cancel);
 		// for (int x = 0; x < DAILY_COLUMNS.length - ?; x++) {
 		// daily.add(new JPanel());
@@ -269,15 +271,15 @@ public class Main implements Serializable {
 		daily.setVisible(true);
 	}
 
-	private final void constructSellPrompt() {
+	private final void constructSellPrompt(){
 		JFrame sellPrompt = new JFrame("Sell");
 		sellPrompt.setLayout(new GridLayout(0, 3));
 		JLabel name = new JLabel("Name"), numItems = new JLabel("# Items"), price = new JLabel("Price");
 		sellPrompt.add(name);
 		sellPrompt.add(numItems);
 		sellPrompt.add(price);
-		for (Item item : items) {
-			if (item.isStocked() && item.getNumListingsToSell() > 0) {
+		for(Item item : items){
+			if(item.isStocked() && item.getNumListingsToSell() > 0){
 				JLabel aName = new JLabel(item.getName());
 				aName.addMouseListener(COPIER);
 				JLabel someItems = new JLabel(item.getNumListingsToSell() * item.getNumItemsPerListing() + "");
@@ -294,42 +296,42 @@ public class Main implements Serializable {
 		sellPrompt.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		sellPrompt.addWindowListener(new WindowListener() {
 			@Override
-			public void windowActivated(WindowEvent e) {
+			public void windowActivated(WindowEvent e){
 			}
 
 			@Override
-			public void windowClosed(WindowEvent e) {
+			public void windowClosed(WindowEvent e){
 			}
 
 			@Override
-			public void windowClosing(WindowEvent e) {
+			public void windowClosing(WindowEvent e){
 				constructSpendingOffers();
 			}
 
 			@Override
-			public void windowDeactivated(WindowEvent e) {
+			public void windowDeactivated(WindowEvent e){
 			}
 
 			@Override
-			public void windowDeiconified(WindowEvent e) {
+			public void windowDeiconified(WindowEvent e){
 			}
 
 			@Override
-			public void windowIconified(WindowEvent e) {
+			public void windowIconified(WindowEvent e){
 			}
 
 			@Override
-			public void windowOpened(WindowEvent e) {
+			public void windowOpened(WindowEvent e){
 			}
 		});
 		sellPrompt.setVisible(true);
 	}
 
-	private final void constructSpendingOffers() {
+	private final void constructSpendingOffers(){
 		JFrame spendingOffers = new JFrame("Spending/Offers");
 		spendingOffers.setLayout(new GridLayout(0, 3));
 		int crownOffers = 0, energyOffers = 0;
-		for (Item i : items) {
+		for(Item i : items){
 			crownOffers += i.getRequiredCrownReserves();
 			energyOffers += i.getRequiredEnergyReserves();
 		}
@@ -349,11 +351,11 @@ public class Main implements Serializable {
 		FloatHolder spendingCrowns = new FloatHolder();
 		spendingCrowns.setFloat(0);
 		JButton combine = new JButton("Combine");
-		combine.addActionListener((e) -> {
-			try {
+		combine.addActionListener((e)->{
+			try{
 				spendingCrowns.setFloat(Integer.parseInt(crownRemain.getText())
 						+ Integer.parseInt(energyRemain.getText()) * energyPrice);
-			} catch (Exception f) {
+			}catch(Exception f){
 				JOptionPane.showMessageDialog(null, "Incorrect Input!");
 			}
 			crownRemain.setText("");
@@ -367,17 +369,13 @@ public class Main implements Serializable {
 			private static final long serialVersionUID = 8316659088569282216L;
 
 			@Override
-			public String getText() {
-				return spendingCrowns.getFloat() + "";
-			}
+			public String getText(){ return spendingCrowns.getFloat() + ""; }
 		});
 		spendingOffers.add(new JLabel() {
 			private static final long serialVersionUID = 8304390475151931293L;
 
 			@Override
-			public String getText() {
-				return spendingCrowns.getFloat() / energyPrice + "";
-			}
+			public String getText(){ return spendingCrowns.getFloat() / energyPrice + ""; }
 		});
 		JButton spend = new JButton("Spend");
 		spendingOffers.add(spend);
@@ -385,17 +383,17 @@ public class Main implements Serializable {
 		spendingOffers.add(spentCrowns);
 		JTextField spentEnergy = new JTextField();
 		spendingOffers.add(spentEnergy);
-		spend.addActionListener((e) -> {
+		spend.addActionListener((e)->{
 			float spentCrownsOutput;
-			try {
+			try{
 				spentCrownsOutput = Integer.parseInt(spentCrowns.getText());
-			} catch (Exception f) {
+			}catch(Exception f){
 				spentCrownsOutput = 0;
 			}
 			float spentEnergyOutput;
-			try {
+			try{
 				spentEnergyOutput = Integer.parseInt(spentEnergy.getText());
-			} catch (Exception f) {
+			}catch(Exception f){
 				spentEnergyOutput = 0;
 			}
 			spendingCrowns.setFloat(spendingCrowns.getFloat() - spentCrownsOutput - spentEnergyOutput * energyPrice);
@@ -412,15 +410,15 @@ public class Main implements Serializable {
 		spendingOffers.setVisible(true);
 	}
 
-	private final void finish() {
-		switch (JOptionPane.showConfirmDialog(null, "Save Your Work?")) {
+	private final void finish(){
+		switch(JOptionPane.showConfirmDialog(null, "Save Your Work?")){
 		case 0:
-			try {
-				ObjectOutputStream savingStream = new ObjectOutputStream(
-						new BufferedOutputStream(new FileOutputStream("data.srl")));
+			try{
+				ObjectOutputStream savingStream
+						= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("data.srl")));
 				savingStream.writeObject(this);
 				savingStream.close();
-			} catch (Exception e) {
+			}catch(Exception e){
 				e.printStackTrace();
 			}
 		case 1:
@@ -430,17 +428,29 @@ public class Main implements Serializable {
 		}
 	}
 
-	private final void record(JTextField[] data) throws Exception {
+	private final String lastUpdateText(){
+		if(items.isEmpty())
+			return "First Run";
+		else
+			return "Last Update: "
+					+ items.get(0).lastUpdate()
+					+ " ("
+					+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000)
+					+ " hours ago)";
+	}
+
+	private final void record(JTextField[] data) throws Exception{
 		energyPrice = ((float) Integer.parseInt(data[data.length - 2].getText())) / 100;
 		int energyReserves = Integer.parseInt(data[data.length - 1].getText());
 		List<RecordParams> recordParamsList = new ArrayList<>(items.size());
 		Date timeStamp = new Date();
-		for(int x = 0; x < items.size(); x++) {// Throwing potential exceptions at once to avoid partial record creation.
+		for(int x = 0; x < items.size(); x++){// Throwing potential exceptions at once to avoid partial record creation.
 			Item item = items.get(x);
-			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 3].getText()) / Integer.parseInt(data[x * DAILY_COLUMNS.length + 4].getText());
-			if (aHPrice == 0)
-				aHPrice = (int) (item.getAHPrice(energyPrice) * 1.01);
-			if (aHPrice * item.getNumItemsPerListing() < item.getSDCRCostPerListing(energyPrice))
+			int aHPrice
+					= Integer.parseInt(data[x * DAILY_COLUMNS.length + 3].getText())
+							/ Integer.parseInt(data[x * DAILY_COLUMNS.length + 4].getText());
+			if(aHPrice == 0) aHPrice = (int) (item.getAHPrice(energyPrice) * 1.01);
+			if(aHPrice * item.getNumItemsPerListing() < item.getSDCRCostPerListing(energyPrice))
 				throw new GoodDealException(item, aHPrice, energyPrice);
 			recordParamsList.add(new RecordParams(
 					item,
@@ -466,18 +476,7 @@ public class Main implements Serializable {
 		});
 	}
 
-	private final String lastUpdateText(){
-		if(items.isEmpty())
-			return "First Run";
-		else
-			return "Last Update: "
-					+ items.get(0).lastUpdate()
-					+ " ("
-					+ (((new Date()).getTime() - items.get(0).lastUpdate().getTime()) / 3600000)
-					+ " hours ago)";
-	}
-
-	private final void run() {
+	private final void run(){
 		new JFXPanel();
 		JFrame reminder = new JFrame("Reminder");
 		History history = new History();
@@ -485,7 +484,7 @@ public class Main implements Serializable {
 		reminder.setLayout(new FlowLayout());
 		reminder.add(new JLabel("Feed pet and complete prestige mission."));
 		JButton reminderDone = new JButton("Done");
-		reminderDone.addActionListener((e) -> {
+		reminderDone.addActionListener((e)->{
 			reminder.setVisible(false);
 			history.setVisible(true);
 		});
@@ -493,32 +492,32 @@ public class Main implements Serializable {
 		reminder.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		reminder.addWindowListener(new WindowListener() {
 			@Override
-			public void windowActivated(WindowEvent arg0) {
+			public void windowActivated(WindowEvent arg0){
 			}
 
 			@Override
-			public void windowClosed(WindowEvent e) {
+			public void windowClosed(WindowEvent e){
 			}
 
 			@Override
-			public void windowClosing(WindowEvent e) {
+			public void windowClosing(WindowEvent e){
 				history.setVisible(true);
 			}
 
 			@Override
-			public void windowDeactivated(WindowEvent e) {
+			public void windowDeactivated(WindowEvent e){
 			}
 
 			@Override
-			public void windowDeiconified(WindowEvent e) {
+			public void windowDeiconified(WindowEvent e){
 			}
 
 			@Override
-			public void windowIconified(WindowEvent e) {
+			public void windowIconified(WindowEvent e){
 			}
 
 			@Override
-			public void windowOpened(WindowEvent e) {
+			public void windowOpened(WindowEvent e){
 			}
 		});
 		reminder.pack();
@@ -538,8 +537,8 @@ public class Main implements Serializable {
 		bottomPanel.add(newItem);
 		JLabel lastUpdate = new JLabel(lastUpdateText());
 		JButton startDaily = new JButton("Start Daily");
-		startDaily.addActionListener((e) -> {
-			constructDaily(() -> {
+		startDaily.addActionListener((e)->{
+			constructDaily(()->{
 				history.update();
 				lastUpdate.setText(lastUpdateText());
 			});
@@ -551,49 +550,36 @@ public class Main implements Serializable {
 		history.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		history.addWindowListener(new WindowListener() {
 			@Override
-			public void windowActivated(WindowEvent arg0) {
+			public void windowActivated(WindowEvent arg0){
 			}
 
 			@Override
-			public void windowClosed(WindowEvent e) {
+			public void windowClosed(WindowEvent e){
 			}
 
 			@Override
-			public void windowClosing(WindowEvent e) {
+			public void windowClosing(WindowEvent e){
 				finish();
 			}
 
 			@Override
-			public void windowDeactivated(WindowEvent e) {
+			public void windowDeactivated(WindowEvent e){
 			}
 
 			@Override
-			public void windowDeiconified(WindowEvent e) {
+			public void windowDeiconified(WindowEvent e){
 			}
 
 			@Override
-			public void windowIconified(WindowEvent e) {
+			public void windowIconified(WindowEvent e){
 			}
 
 			@Override
-			public void windowOpened(WindowEvent e) {
+			public void windowOpened(WindowEvent e){
 			}
 		});
 		history.setLocationRelativeTo(null);
 		history.setResizable(false);
 		reminder.setVisible(true);
-	}
-
-	public static void main(String[] args) {
-		Main main;
-		try {
-			ObjectInputStream loadingStream = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("data.srl")));
-			main = (Main) loadingStream.readObject();
-			loadingStream.close();
-		} catch (Exception e) {
-			main = new Main();
-		}
-		main.run();
 	}
 }
