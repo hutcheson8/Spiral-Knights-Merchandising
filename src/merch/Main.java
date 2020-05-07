@@ -115,7 +115,7 @@ public class Main implements Serializable {
 						break;
 					case 4:
 						for (Item i : items) {
-							sum += i.getCurrentListings();
+							sum += i.getMaxListings();
 						}
 						break;
 					case 5:
@@ -140,15 +140,15 @@ public class Main implements Serializable {
 				case 3:
 					return i.getNetProfitSince(null);
 				case 4:
-					return i.getCurrentListings();
+					return i.getMaxListings();
 				case 5:
 					return (Object) i.getCost();//KNIVES Test if this cast is required
 				case 6:
-					return i.getCurrentPrice();
+					return i.getPrice();
 				case 7:
-					return i.getCurrentCostPlusPercent();
+					return i.getCostPlusPercent();
 				case 8:
-					return i.getCurrentUndercutMargin();
+					return i.getUndercutMargin();
 				}
 				return null;
 			}
@@ -277,11 +277,11 @@ public class Main implements Serializable {
 		sellPrompt.add(numItems);
 		sellPrompt.add(price);
 		for (Item item : items) {
-			if (item.isCurrentlyStocked() && item.getNumListingsToSell() > 0) {
+			if (item.isStocked() && item.getNumListingsToSell() > 0) {
 				JLabel aName = new JLabel(item.getName());
 				aName.addMouseListener(COPIER);
-				JLabel someItems = new JLabel(item.getNumListingsToSell() * item.getQuantityPerListing() + "");
-				JLabel aPrice = new JLabel(item.getCurrentPrice() + "");
+				JLabel someItems = new JLabel(item.getNumListingsToSell() * item.getNumItemsPerListing() + "");
+				JLabel aPrice = new JLabel(item.getPrice() + "");
 				aPrice.addMouseListener(COPIER);
 				sellPrompt.add(aName);
 				sellPrompt.add(someItems);
@@ -439,8 +439,8 @@ public class Main implements Serializable {
 			Item item = items.get(x);
 			int aHPrice = Integer.parseInt(data[x * DAILY_COLUMNS.length + 3].getText()) / Integer.parseInt(data[x * DAILY_COLUMNS.length + 4].getText());
 			if (aHPrice == 0)
-				aHPrice = (int) (item.getMostRecentAHPrice(energyPrice) * 1.01);
-			if (aHPrice * item.getQuantityPerListing() < item.getSDCRCostPerListing(energyPrice))
+				aHPrice = (int) (item.getAHPrice(energyPrice) * 1.01);
+			if (aHPrice * item.getNumItemsPerListing() < item.getSDCRCostPerListing(energyPrice))
 				throw new GoodDealException(item, aHPrice, energyPrice);
 			recordParamsList.add(new RecordParams(
 					item,
@@ -529,13 +529,10 @@ public class Main implements Serializable {
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new FlowLayout());
 		JButton newItem = new JButton("Add Item");
-		newItem.addActionListener((e) -> {
-			Form.request(new FormRequest() {
-				@Override
-				public void run() throws CancelException {
-					items.add(new Item());
-					history.update();
-				}
+		newItem.addActionListener((e)->{
+			Form.request(()->{
+				items.add(new Item());
+				history.update();
 			});
 		});
 		bottomPanel.add(newItem);

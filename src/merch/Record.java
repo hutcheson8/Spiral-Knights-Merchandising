@@ -23,7 +23,7 @@ public final class Record implements Serializable {
 		this.previous = previous;
 		this.timestamp = timestamp;
 		this.aHPrice = aHPrice;
-		lotsExpired = expiredItems / recordItem.getQuantityPerListing();
+		lotsExpired = expiredItems / recordItem.getNumItemsPerListing();
 		cost = recordItem.getSDCRCostPerListing(energyPrice);
 		undercut = 0;
 		Record notYetExpired = getNotYetExpired();
@@ -31,7 +31,7 @@ public final class Record implements Serializable {
 			lotsSold = 0;
 			profit = 0;
 			loss = 0;
-			maxListings = recordItem.getStartingListings();
+			maxListings = recordItem.getNumStartingListings();
 			costPlusPercent = 1f;
 			undercutMargin = .75f;
 		} else {
@@ -75,15 +75,15 @@ public final class Record implements Serializable {
 		}
 		int costPlusPrice = (int) (cost * 10f / 9 * (1 + costPlusPercent));
 		int undercutMarginPrice = (int) (cost * 10f / 9
-				+ (aHPrice * recordItem.getQuantityPerListing() - cost * 10f / 9) * undercutMargin);
+				+ (aHPrice * recordItem.getNumItemsPerListing() - cost * 10f / 9) * undercutMargin);
 		usingCostPlus = costPlusPrice < undercutMarginPrice;
 		price = usingCostPlus ? costPlusPrice : undercutMarginPrice;
-		listingPrice = max(recordItem.getStarLevelBasedListingPrice(), (int) (price * .1f + .5f));
+		listingPrice = max(recordItem.getStarLevelBasedListingFee(), (int) (price * .1f + .5f));
 		boolean excludeStocking;
 		if(notYetExpired == null){
 			excludeStocking = false;
 		}else{
-			notYetExpired.setUndercut(aHPrice * recordItem.getQuantityPerListing());
+			notYetExpired.setUndercut(aHPrice * recordItem.getNumItemsPerListing());
 			excludeStocking = ((price < notYetExpired.getPrice() && numActiveListings > 0) || price < cost * 10f / 9);
 		}
 		netProfit = profit - loss;
@@ -91,6 +91,8 @@ public final class Record implements Serializable {
 		numListingsToSell = maxListings - numActiveListings;
 		if(excludeStocking) setNumListingsToSell(0);
 	}
+	
+	public int getProfitPerListing(){ return (int) (price * 9f / 10 - cost); }
 	
 	public final int getAHPrice() {
 		return aHPrice;

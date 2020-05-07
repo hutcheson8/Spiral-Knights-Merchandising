@@ -2,56 +2,70 @@ package merch;
 
 public class RankableParams implements Comparable<RankableParams> {// KNIVES Consider renaming this class.
 	private final boolean lastSDPurchase;
-	private final int maxListingsToSell;
-	private int maxSDPurchases;
-	private final int profittingFromItemQuantity, profitPerEnergySpent;
+	private final int maxSDPurchases, profitPerEnergySpent;
 	private final RecordParams recordParams;
 
 	public RankableParams(boolean lastSDPurchase, RecordParams recordParams){
 		this.lastSDPurchase = lastSDPurchase;
 		this.recordParams = recordParams;
-		profittingFromItemQuantity = recordParams.getProfittingFromItemQuantity(lastSDPurchase);
-		profitPerEnergySpent = recordParams.getProfitPerEnergySpent(lastSDPurchase);
-		if(lastSDPurchase){
-			maxSDPurchases = profittingFromItemQuantity == 0 ? 0 : 1;
+		int numItemsSoldFromSDPurchase = 0;
+		int maxItemsToBuy = getInitialNumListingsToSell() * getNumItemsPerListing() - getNumLeftoverItems();
+		if(getInitialNumListingsToSell() != 0 && maxItemsToBuy > 0){
+			if(lastSDPurchase){
+				numItemsSoldFromSDPurchase = maxItemsToBuy % getNumItemsPerSDPurchase();
+				maxSDPurchases = 1;
+			}else{
+				numItemsSoldFromSDPurchase = getNumItemsPerSDPurchase();
+				maxSDPurchases = maxItemsToBuy / getNumItemsPerSDPurchase();
+			}
 		}else{
-			maxSDPurchases
-					= (recordParams.getItem().getNumListingsToSell() * recordParams.getQuantityPerListing()
-							- recordParams.getLeftoverItems()) / recordParams.getQuantityPerSDPurchase();
+			maxSDPurchases = 0;
 		}
-		this.maxListingsToSell = recordParams.getItem().getNumListingsToSell();
+		profitPerEnergySpent
+				= (int) ((getProfitPerListing())
+						/ getNumItemsPerListing()
+						* numItemsSoldFromSDPurchase
+						/ getEnergyPerSDPurchase());
 	}
+
+	private int getProfitPerListing(){ return recordParams.getProfitPerListing(); }
+
+	private int getInitialNumListingsToSell(){ return recordParams.getInitialNumListingsToSell(); }
 
 	public int authorizeSDPurchases(int energyReserves){
 		int numPurchasesToMake = Math.min(energyReserves / getEnergyPerSDPurchase(), maxSDPurchases);
-		int itemStock = getLeftoverItems() + numPurchasesToMake * getQuantityPerSDPurchase();
 		energyReserves -= numPurchasesToMake * getEnergyPerSDPurchase();
 		if(lastSDPurchase){
 			if(numPurchasesToMake == 1){
-				setNumListingsToSell(maxListingsToSell);
+				setNumListingsToSell(getInitialNumListingsToSell());
 			}
 		}else{
-			setNumListingsToSell(Math.min(itemStock / getQuantityPerListing(), maxListingsToSell));
+			setNumListingsToSell(Math.min(
+					(getNumLeftoverItems() + numPurchasesToMake * getNumItemsPerSDPurchase()) / getNumItemsPerListing(),
+					getInitialNumListingsToSell()));
 		}
 		return energyReserves;
 	}
 
 	@Override
 	public int compareTo(RankableParams toCompareTo){
+		if(getItem() == toCompareTo.getItem()) return lastSDPurchase ? -1 : 1;
 		Integer thisProfit = getProfitPerEnergySpent();
 		Integer otherProfit = toCompareTo.getProfitPerEnergySpent();
 		return thisProfit.compareTo(otherProfit);
 	}
 
+	private Item getItem(){ return recordParams.getItem(); }
+
 	public int getEnergyPerSDPurchase(){ return recordParams.getEnergyPerSDPurchase(); }
 
-	private int getLeftoverItems(){ return recordParams.getLeftoverItems(); }
+	private int getNumLeftoverItems(){ return recordParams.getNumLeftoverItems(); }
 
 	public int getProfitPerEnergySpent(){ return profitPerEnergySpent; }
 
-	private int getQuantityPerListing(){ return recordParams.getQuantityPerListing(); }
+	private int getNumItemsPerListing(){ return recordParams.getNumItemsPerListing(); }
 
-	private int getQuantityPerSDPurchase(){ return recordParams.getQuantityPerSDPurchase(); }
+	private int getNumItemsPerSDPurchase(){ return recordParams.getNumItemsPerSDPurchase(); }
 
 	public void setNumListingsToSell(int numListingsToSell){
 		recordParams.setNumListingsToSell(numListingsToSell);

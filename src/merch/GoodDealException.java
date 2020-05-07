@@ -8,7 +8,7 @@ public class GoodDealException extends Exception {
 
 	public GoodDealException(Item i, int aHPrice, float energyPrice) {
 		dealMessage = "Item " + i.getName() + " is on sale for " + aHPrice + " crowns per item. It is worth "
-				+ i.getSDCRCostPerListing(energyPrice) / i.getQuantityPerListing() + " per item. Buy it.";
+				+ i.getSDCRCostPerListing(energyPrice) / i.getNumItemsPerListing() + " per item. Buy it.";
 	}
 
 	public final void showDealMessage() {
