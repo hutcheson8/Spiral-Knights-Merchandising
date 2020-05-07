@@ -10,42 +10,37 @@ import java.util.GregorianCalendar;
 
 public final class Record implements Serializable {
 	private static final long serialVersionUID = 2941864307935615486L;
-	private final int lotsSold, lotsExpired, profit, loss, netProfit, maxListings, price, cost, aHPrice, listingPrice;
-	private final Record previous;
+	private final int netProfit, maxListings, price, cost, aHPrice, listingPrice;
+	private final Record previousRecord;
 	private boolean stocked;
 	private final Date timestamp;
-	private int undercut, finalListings, numListingsToSell;
+	private int undercut, numFinalListings, numListingsToSell;
 	private final float undercutMargin, costPlusPercent;
 	private final boolean usingCostPlus;
 
 	public Record(int expiredItems, int numActiveListings, int aHPrice, Float energyPrice, Date timestamp, Record previous,
 			Item recordItem) {
-		this.previous = previous;
+		this.previousRecord = previous;
 		this.timestamp = timestamp;
 		this.aHPrice = aHPrice;
-		lotsExpired = expiredItems / recordItem.getNumItemsPerListing();
 		cost = recordItem.getSDCRCostPerListing(energyPrice);
 		undercut = 0;
 		Record notYetExpired = getNotYetExpired();
 		if (previous == null) {
-			lotsSold = 0;
-			profit = 0;
-			loss = 0;
 			maxListings = recordItem.getNumStartingListings();
 			costPlusPercent = 1f;
 			undercutMargin = .75f;
+			netProfit=0;
 		} else {
-			lotsSold = previous.getFinalListings() - lotsExpired - numActiveListings;
-			profit = (int) (lotsSold * (notYetExpired.getPrice() * 9f / 10 - cost));
+			int numLotsExpired = expiredItems / recordItem.getNumItemsPerListing();
 			Record justExpired = getJustExpired();
 			int expiredListingPrice = 0;
 			if (justExpired != null) {
 				expiredListingPrice = justExpired.getListingPrice();
 			}
-			loss = lotsExpired * expiredListingPrice;
 			int previousMaxListings = previous.getMaxListings();
-			if (lotsExpired > 0) {// Expired
-				previousMaxListings = previous.getFinalListings() - lotsExpired;
+			if (numLotsExpired > 0) {// Expired
+				previousMaxListings = previous.getNumFinalListings() - numLotsExpired;
 				if (previousMaxListings == 0)
 					previousMaxListings = 1;
 				if (justExpired != null && justExpired.getUndercut() != 0) {
@@ -56,11 +51,11 @@ public final class Record implements Serializable {
 					undercutMargin = previous.getUndercutMargin();
 					costPlusPercent = previous.getCostPlusPercent();
 				}
-			}else if(previous.finalListings == previous.maxListings
+			}else if(previous.numFinalListings == previous.maxListings
 					&& previous.isRecentEnough(timestamp)
 					&& numActiveListings == 0){// Sold out
 				previousMaxListings++;
-				if (previous.isUsingCostPlus()) {
+				if (previous.usingCostPlus) {
 					undercutMargin = previous.getUndercutMargin();
 					costPlusPercent = previous.getCostPlusPercent() + .05f;
 				} else {
@@ -72,6 +67,9 @@ public final class Record implements Serializable {
 				costPlusPercent = previous.getCostPlusPercent();
 			}
 			maxListings = previousMaxListings;
+			netProfit
+					= ((int) ((previous.getNumFinalListings() - numLotsExpired - numActiveListings)
+							* (notYetExpired.getPrice() * 9f / 10 - cost))) - numLotsExpired * expiredListingPrice;
 		}
 		int costPlusPrice = (int) (cost * 10f / 9 * (1 + costPlusPercent));
 		int undercutMarginPrice = (int) (cost * 10f / 9
@@ -86,8 +84,7 @@ public final class Record implements Serializable {
 			notYetExpired.setUndercut(aHPrice * recordItem.getNumItemsPerListing());
 			excludeStocking = ((price < notYetExpired.getPrice() && numActiveListings > 0) || price < cost * 10f / 9);
 		}
-		netProfit = profit - loss;
-		finalListings = maxListings;
+		numFinalListings = maxListings;
 		numListingsToSell = maxListings - numActiveListings;
 		if(excludeStocking) setNumListingsToSell(0);
 	}
@@ -111,15 +108,15 @@ public final class Record implements Serializable {
 		return flo;
 	}
 
-	private final int getFinalListings() {
-		return finalListings;
+	private final int getNumFinalListings() {
+		return numFinalListings;
 	}
 
 	private final Record getJustExpired() {
 		Record notYet = getNotYetExpired();
 		if (notYet == null)
 			return null;
-		return notYet.getPrevious();
+		return notYet.getPreviousRecord();
 	}
 
 	public final int getListingPrice() {
@@ -140,27 +137,27 @@ public final class Record implements Serializable {
 		converter.set(Calendar.DAY_OF_YEAR, converter.get(Calendar.DAY_OF_YEAR) - 2);
 		Date expiredTime = converter.getTime();
 		Record returnValue = this;
-		if (returnValue.getPrevious() == null)
+		if (returnValue.getPreviousRecord() == null)
 			return returnValue;
 		do {
-			returnValue = returnValue.getPrevious();
-			if (returnValue.getPrevious() == null) {
+			returnValue = returnValue.getPreviousRecord();
+			if (returnValue.getPreviousRecord() == null) {
 				return returnValue;
 			}
-		} while (returnValue.getPrevious().getTimestamp().after(expiredTime));
+		} while (returnValue.getPreviousRecord().timestamp.after(expiredTime));
 		return returnValue;
 	}
 
 	public final int getNumListingsNotStocked() {
-		return maxListings - finalListings;
+		return maxListings - numFinalListings;
 	}
 
 	public final int getNumListingsToSell() {
 		return numListingsToSell;
 	}
 
-	private final Record getPrevious() {
-		return previous;
+	private final Record getPreviousRecord() {
+		return previousRecord;
 	}
 
 	/*
@@ -207,12 +204,8 @@ public final class Record implements Serializable {
 		return stocked;
 	}
 
-	private final boolean isUsingCostPlus() {
-		return usingCostPlus;
-	}
-
 	public final void setNumListingsToSell(int numListingsToSell) {
-		this.finalListings += numListingsToSell - this.numListingsToSell;
+		this.numFinalListings += numListingsToSell - this.numListingsToSell;
 		this.numListingsToSell = numListingsToSell;
 		stocked = numListingsToSell > 0;
 	}
