@@ -485,7 +485,6 @@ public class Main implements Serializable {
                         return null;
                 }
                 if (row == getRowCount() - 1) {
-                    int sum = 0;
                     switch (column) {
                         case 0:
                             return "Total";
