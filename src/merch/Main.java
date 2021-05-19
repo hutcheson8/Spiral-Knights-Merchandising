@@ -1,24 +1,13 @@
 package merch;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.*;
+import java.awt.datatransfer.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
+import java.io.*;
+import java.util.*;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -32,25 +21,17 @@ import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.DataFormat;
-
 public class Main implements Serializable {
-	private final class FloatHolder {
+	private static final class FloatHolder {
 		float f;
 
-		private final float getFloat(){ return f; }
+		private float getFloat(){ return f; }
 
-		private final void setFloat(float f){ this.f = f; }
+		private void setFloat(float f){ this.f = f; }
 	}
 
-	private final class History extends JFrame {
-		private static final long serialVersionUID = 55356975967430018L;
+	private final class History extends JFrame implements ClipboardOwner {
 		private final TableModel historyModel = new AbstractTableModel() {
-			private static final long serialVersionUID = -160380739584172259L;
-
 			@Override
 			public int getColumnCount(){ return 9; }
 
@@ -59,86 +40,43 @@ public class Main implements Serializable {
 
 			@Override
 			public Object getValueAt(int row, int column){
-				if(row == 0) switch(column){
-				case 0:
-					return "Name";
-				case 1:
-					return "Net Profit to Date";
-				case 2:
-					return "Net Profit One Week";
-				case 3:
-					return "Net Profit Today";
-				case 4:
-					return "# of Listings";
-				case 5:
-					return "Cost";
-				case 6:
-					return "Price";
-				case 7:
-					return "Cost Plus %";
-				case 8:
-					return "Undercut Margin";
-				}
+				if (row == 0) return
+						switch (column) {
+							case 0 -> "Name";
+							case 1 -> "Net Profit to Date";
+							case 2 -> "Net Profit One Week";
+							case 3 -> "Net Profit Today";
+							case 4 -> "# of Listings";
+							case 5 -> "Cost";
+							case 6 -> "Price";
+							case 7 -> "Cost Plus %";
+							case 8 -> "Undercut Margin";
+							default -> null;
+						};
 				if(row == getRowCount() - 1){
 					int sum = 0;
-					switch(column){
-					case 0:
-						return "Total";
-					case 1:
-						for(Item i : items){
-							sum += i.getNetProfitToDate();
-						}
-						break;
-					case 2:
-						for(Item i : items){
-							sum
-									+= i.getNetProfitSince(
-											Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
-						}
-						break;
-					case 3:
-						for(Item i : items){
-							sum += i.getNetProfitSince(null);
-						}
-						break;
-					case 4:
-						for(Item i : items){
-							sum += i.getMaxListings();
-						}
-						break;
-					case 5:
-						return "N/A";
-					case 6:
-						return "N/A";
-					case 7:
-						return "N/A";
-					case 8:
-						return "N/A";
-					}
-					return sum;
+					return switch(column) {
+						case 0 -> "Total";
+						case 1 -> items.stream().map(Item::getNetProfitToDate).reduce(Integer::sum);
+						case 2 -> items.stream().map(i -> i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)))).reduce(Integer::sum);
+						case 3 -> items.stream().map(Item::getNetProfitSince).reduce(Integer::sum);
+						case 4 -> items.stream().map(Item::getMaxListings).reduce(Integer::sum);
+						default -> "N/A";
+					};
 				}
 				Item i = items.get(row - 1);
-				switch(column){
-				case 0:
-					return i.getName();
-				case 1:
-					return i.getNetProfitToDate();
-				case 2:
-					return i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
-				case 3:
-					return i.getNetProfitSince(null);
-				case 4:
-					return i.getMaxListings();
-				case 5:
-					return i.getCost();// KNIVES Test if this cast is required
-				case 6:
-					return i.getPrice();
-				case 7:
-					return i.getCostPlusPercent();
-				case 8:
-					return i.getUndercutMargin();
-				}
-				return null;
+				return switch (column) {
+					case 0 -> i.getName();
+					case 1 -> i.getNetProfitToDate();
+					case 2 -> i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)));
+					case 3 -> i.getNetProfitSince(null);
+					case 4 -> i.getMaxListings();
+					case 5 -> i.getCost();
+					case 6 -> i.getPrice();
+					case 7 -> i.getCostPlusPercent();
+					case 8 -> i.getUndercutMargin();
+					default -> null;
+				};
 			}
 		};
 
@@ -146,30 +84,33 @@ public class Main implements Serializable {
 			super("History");
 		}
 
-		private final void removeTable(){
+		private void removeTable(){
 			Component[] comps = getComponents();
 			for(Component comp : comps){
 				if(comp instanceof JTable) remove(comp);
 			}
 		}
 
-		private final void update(){
+		private void update(){
 			removeTable();
 			add(new JTable(historyModel), BorderLayout.CENTER);
 			validate();
 			pack();
 			repaint();
 		}
+
+		@Override
+		public void lostOwnership(Clipboard clipboard, Transferable contents) {
+		}
 	}
 
 	private final static MouseListener COPIER = new MouseListener() {
 		@Override
 		public void mouseClicked(MouseEvent e){
-			HashMap<DataFormat, Object> data = new HashMap<DataFormat, Object>();
-			data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
-			Platform.runLater(()->{
-				Clipboard.getSystemClipboard().setContent(data);
-			});
+			String toAddToClipboard = ((JLabel) e.getComponent()).getText();
+			History history = (History) e.getComponent().getParent();
+			StringSelection stringSelection = new StringSelection(toAddToClipboard);
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, history);
 		}
 
 		@Override
@@ -194,7 +135,6 @@ public class Main implements Serializable {
 	 */
 	private final static String[] DAILY_COLUMNS
 			= {"Expired Items", "Leftover Items", "Active Listings", "AH Price", "AH Items/Listing"};
-	private static final long serialVersionUID = -7878541532400694122L;
 
 	public static void main(String[] args){
 		Main main;
@@ -210,24 +150,24 @@ public class Main implements Serializable {
 	}
 
 	private Float energyPrice;
-	private final ArrayList<Item> items = new ArrayList<Item>();
+	private final ArrayList<Item> items = new ArrayList<>();
 
-	private final void constructDaily(Runnable update){
+	private void constructDaily(Runnable update){
 		JFrame daily = new JFrame("Daily");
 		daily.setLayout(new GridLayout(items.size() + 2, DAILY_COLUMNS.length + 1));
 		JTextField[] textFields = new JTextField[items.size() * DAILY_COLUMNS.length + 2];
 		daily.add(new JLabel("Name"));
-		for(int x = 0; x < DAILY_COLUMNS.length; x++){
-			daily.add(new JLabel(DAILY_COLUMNS[x]));
-		}
+		Arrays.stream(DAILY_COLUMNS).forEach(dailyColumn -> daily.add(new JLabel(dailyColumn)));
 		for(int x = 0; x < items.size(); x++){
 			Item i = items.get(x);
 			JLabel itemName = new JLabel(i.getName());
 			itemName.addMouseListener(COPIER);
 			daily.add(itemName);
+			//KNIVES Resume here
 			for(int y = 0; y < DAILY_COLUMNS.length; y++){
 				textFields[x * DAILY_COLUMNS.length + y] = new JTextField();
-				daily.add(textFields[x * DAILY_COLUMNS.length + y]);
+				JTextField textField = textFields[x * DAILY_COLUMNS.length + y];
+				daily.add(textField);
 			}
 		}
 		JLabel energyPriceLabel = new JLabel("Energy Price: ");
@@ -454,12 +394,12 @@ public class Main implements Serializable {
 				throw new GoodDealException(item, aHPrice, energyPrice);
 			recordParamsList.add(new RecordParams(
 					item,
-					Integer.parseInt(data[x * DAILY_COLUMNS.length + 0].getText()),
+					Integer.parseInt(data[x * DAILY_COLUMNS.length].getText()),
 					Integer.parseInt(data[x * DAILY_COLUMNS.length + 1].getText()),
 					Integer.parseInt(data[x * DAILY_COLUMNS.length + 2].getText()),
 					aHPrice));
 		}
-		recordParamsList.stream().forEach((recordParams)->{
+		recordParamsList.forEach((recordParams)->{
 			recordParams.addRecord(energyPrice, timeStamp);
 		});
 		List<RankableParams> rankableParamsList = new ArrayList<>(items.size() * 2);
@@ -471,13 +411,10 @@ public class Main implements Serializable {
 		for(RankableParams rankableParams : rankableParamsList){
 			energyReserves = rankableParams.authorizeSDPurchases(energyReserves);
 		}
-		recordParamsList.stream().forEach((recordParams)->{
-			recordParams.propogateNumListingsToSell();
-		});
+		recordParamsList.forEach(RecordParams::propogateNumListingsToSell);
 	}
 
-	private final void run(){
-		new JFXPanel();
+	private void run(){
 		JFrame reminder = new JFrame("Reminder");
 		History history = new History();
 		// Setup Window for small reminder
