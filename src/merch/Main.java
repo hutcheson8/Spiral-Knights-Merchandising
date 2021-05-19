@@ -490,13 +490,13 @@ public class Main implements Serializable {
                         case 0:
                             return "Total";
                         case 1:
-                            return items.stream().map(Item::getNetProfitToDate).reduce(Integer::sum);
+                            return items.stream().map(Item::getNetProfitToDate).reduce(Integer::sum).orElse(0);
                         case 2:
-                            return items.stream().map(i -> i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)))).reduce(Integer::sum);
+                            return items.stream().map(i -> i.getNetProfitSince(Date.from((new Date()).toInstant().minusSeconds(60 * 60 * 24 * 7)))).reduce(Integer::sum).orElse(0);
                         case 3:
-                            return items.stream().map(Item::getNetProfitSince).reduce(Integer::sum);
+                            return items.stream().map(Item::getNetProfitSince).reduce(Integer::sum).orElse(0);
                         case 4:
-                            return items.stream().map(Item::getMaxListings).reduce(Integer::sum);
+                            return items.stream().map(Item::getMaxListings).reduce(Integer::sum).orElse(0);
                         default:
                             return "N/A";
                     }
