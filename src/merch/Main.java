@@ -1,13 +1,14 @@
 package merch;
 
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
+
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -20,10 +21,11 @@ public class Main implements Serializable {
     private final static MouseListener COPIER = new MouseListener() {
         @Override
         public void mouseClicked(MouseEvent e) {
-            String toAddToClipboard = ((JLabel) e.getComponent()).getText();
-            History history = (History) e.getComponent().getParent();
-            StringSelection stringSelection = new StringSelection(toAddToClipboard);
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, history);
+            HashMap<DataFormat, Object> data = new HashMap<>();
+            data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
+            Platform.runLater(() -> {
+                Clipboard.getSystemClipboard().setContent(data);
+            });
         }
 
         @Override
@@ -331,6 +333,7 @@ public class Main implements Serializable {
     }
 
     private void run() {
+        new JFXPanel();
         JFrame reminder = new JFrame("Reminder");
         History history = new History();
         // Setup Window for small reminder
@@ -448,7 +451,7 @@ public class Main implements Serializable {
         }
     }
 
-    private final class History extends JFrame implements ClipboardOwner {
+    private final class History extends JFrame {
         private final TableModel historyModel = new AbstractTableModel() {
             @Override
             public int getColumnCount() {
@@ -543,10 +546,6 @@ public class Main implements Serializable {
             validate();
             pack();
             repaint();
-        }
-
-        @Override
-        public void lostOwnership(Clipboard clipboard, Transferable contents) {
         }
     }
 }
