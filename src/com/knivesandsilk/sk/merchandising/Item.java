@@ -1,4 +1,4 @@
-package merch;
+package com.knivesandsilk.sk.merchandising;
 
 import java.io.Serializable;
 import java.util.ArrayList;

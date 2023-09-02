@@ -4,3 +4,7 @@ data.srl
 .classpath
 .settings/
 .idea/
+ledger.srl
+out/
+SK-Merchandising.iml
+src/META-INF/MANIFEST.MF

@@ -1,4 +1,4 @@
-package merch;
+package com.knivesandsilk.sk.merchandising;
 
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.*;
 
 public class Main implements Serializable {
+    private static final String LEDGER_FILE_NAME = "ledger.srl";
     private final static MouseListener COPIER = new MouseListener() {
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -57,7 +58,7 @@ public class Main implements Serializable {
         Main main;
         try {
             ObjectInputStream loadingStream
-                    = new ObjectInputStream(new BufferedInputStream(new FileInputStream("data.srl")));
+                    = new ObjectInputStream(new BufferedInputStream(new FileInputStream(LEDGER_FILE_NAME)));
             main = (Main) loadingStream.readObject();
             loadingStream.close();
         } catch (Exception e) {
@@ -273,7 +274,7 @@ public class Main implements Serializable {
             case 0:
                 try {
                     ObjectOutputStream savingStream
-                            = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("data.srl")));
+                            = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(LEDGER_FILE_NAME)));
                     savingStream.writeObject(this);
                     savingStream.close();
                 } catch (Exception e) {

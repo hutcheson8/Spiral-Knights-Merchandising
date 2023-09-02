@@ -1,4 +1,4 @@
-package merch;
+package com.knivesandsilk.sk.merchandising;
 
 public class RankableParams implements Comparable<RankableParams> {// KNIVES Consider renaming this class.
     private final boolean lastSDPurchase;

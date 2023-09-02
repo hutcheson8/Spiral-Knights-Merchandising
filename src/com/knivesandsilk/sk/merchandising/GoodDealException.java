@@ -1,4 +1,4 @@
-package merch;
+package com.knivesandsilk.sk.merchandising;
 
 import javax.swing.*;
 

@@ -1,4 +1,4 @@
-package merch;
+package com.knivesandsilk.sk.merchandising;
 
 /**
  * This exception is thrown whenever a user presses cancel, it ends the
