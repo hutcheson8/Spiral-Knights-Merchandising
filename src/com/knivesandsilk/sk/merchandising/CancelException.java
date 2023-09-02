@@ -9,12 +9,12 @@ package com.knivesandsilk.sk.merchandising;
  * @since 1.0
  */
 public class CancelException extends Exception {
-    private static final long serialVersionUID = 3964208534928270426L;
+  private static final long serialVersionUID = 3964208534928270426L;
 
-    /**
-     * This exception logs itself and then is thrown when the user selects "Cancel"
-     * while operating on the Main.userInputThread.
-     */
-    public CancelException() {
-    }
+  /**
+   * This exception logs itself and then is thrown when the user selects "Cancel"
+   * while operating on the Main.userInputThread.
+   */
+  public CancelException() {
+  }
 }
