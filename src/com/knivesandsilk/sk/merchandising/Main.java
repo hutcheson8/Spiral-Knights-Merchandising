@@ -32,11 +32,6 @@ public class Main implements Serializable {
   private final static MouseListener COPIER = new MouseListener() {
     @Override
     public void mouseClicked(MouseEvent e) {
-      HashMap<DataFormat, Object> data = new HashMap<>();
-      data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
-      Platform.runLater(() -> {
-        Clipboard.getSystemClipboard().setContent(data);
-      });
     }
 
     @Override
@@ -49,6 +44,11 @@ public class Main implements Serializable {
 
     @Override
     public void mousePressed(MouseEvent e) {
+      HashMap<DataFormat, Object> data = new HashMap<>();
+      data.put(DataFormat.PLAIN_TEXT, ((JLabel) e.getComponent()).getText());
+      Platform.runLater(() -> {
+        Clipboard.getSystemClipboard().setContent(data);
+      });
     }
 
     @Override
