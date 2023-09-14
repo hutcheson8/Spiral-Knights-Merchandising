@@ -278,13 +278,12 @@ public class Main implements Serializable {
       crownReserves += i.getRequiredCrownReserves();
       energyReserves += i.getRequiredEnergyReserves();
     }
-    crownReserves += 25000;//For Basil recipes
     spendingOffers.add(new JLabel("Operation"));
     spendingOffers.add(new JLabel("Crowns"));
     spendingOffers.add(new JLabel("Energy"));
     spendingOffers.add(new JLabel("Reserves: "));
     spendingOffers.add(new JLabel(crownReserves + " CR"));
-    spendingOffers.add(new JLabel(energyReserves/100+1 + "x100 CE"));
+    spendingOffers.add(new JLabel(energyReserves / 100 + 1 + "x100 CE"));
     spendingOffers.add(new JLabel("Remainder: "));
     JTextField crownRemain = new JTextField();
     spendingOffers.add(crownRemain);
